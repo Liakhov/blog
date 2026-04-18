@@ -55,21 +55,21 @@ const posts = (await getCollection('blog')).sort(
 			}
 			.title {
 				margin: 0;
-				color: var(--color-black);
+				color: var(--color-surface-foreground);
 				line-height: 1;
 			}
 			.date {
 				margin: 0;
-				color: var(--color-gray);
+				color: var(--color-muted-foreground);
 			}
 			ul li a:hover h4,
 			ul li a:hover .date {
-				color: var(--color-accent);
+				color: var(--color-surface-foreground);
 			}
 			ul a:hover img {
-				box-shadow: 0 2px 6px color-mix(in srgb, var(--color-gray) 25%, transparent),
-				0 8px 24px color-mix(in srgb, var(--color-gray) 33%, transparent),
-				0 16px 32px color-mix(in srgb, var(--color-gray) 33%, transparent);
+				box-shadow: 0 2px 6px var(--color-muted),
+				0 8px 24px var(--color-border),
+				0 16px 32px var(--color-border);
 			}
 			@media (max-width: 720px) {
 				ul {

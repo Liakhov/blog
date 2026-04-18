@@ -1,18 +1,35 @@
 @import "tailwindcss";
 
 @theme inline {
-    --color-accent: #2337ff;
-    --color-accent-dark: #000d8a;
-    --color-black: rgb(15, 18, 25);
-    --color-gray: rgb(96, 115, 159);
-    --color-gray-light: rgb(229, 233, 240);
-    --color-gray-dark: rgb(34, 41, 57);
+    /* Background & Foreground */
+    --color-background: #f5f5f4;
+    --color-foreground: #00000080;
+
+    /* Surface — header, cards, elevated containers */
+    --color-surface: #f5f5f4bf;
+    --color-surface-foreground: #000000;
+
+    /* Muted — captions, dates, secondary text */
+    --color-muted: #0000000d;
+    --color-muted-foreground: #00000060;
+
+    /* Border */
+    --color-border: #00000015;
+    --color-border-accent: #00000026;
+    --color-border-accent-hover: #00000040;
+
+    /* Code */
+    --color-code: #0000000d;
+    --color-code-foreground: inherit;
+    --color-pre: #1c1917;
+    --color-pre-foreground: #e5e7eb;
 }
 
 @layer base {
     html {
         overflow-y: scroll;
         scroll-behavior: smooth;
+        color-scheme: light;
     }
 
     body {
@@ -22,8 +39,11 @@
         font-family: var(--font-inter);
         font-size: 18px;
         line-height: 1.7;
-        color: var(--color-gray-dark);
+        background-color: var(--color-background);
+        color: var(--color-foreground);
         overflow-wrap: break-word;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
         @media (min-width: 720px) { font-size: 20px; }
     }
 
@@ -39,8 +59,15 @@
     }
 
     a {
-        color: var(--color-accent);
-        &:hover { color: var(--color-accent-dark); }
+        color: inherit;
+        text-decoration-line: underline;
+        text-underline-offset: 2px;
+        text-decoration-color: var(--color-border-accent);
+        transition: color 0.3s ease, text-decoration-color 0.3s ease;
+        &:hover {
+            color: var(--color-surface-foreground);
+            text-decoration-color: var(--color-border-accent-hover);
+        }
     }
 
     button:not(:disabled),
@@ -49,7 +76,8 @@
     }
 
     h1, h2, h3, h4, h5, h6 {
-        color: var(--color-black);
+        color: var(--color-surface-foreground);
+        font-weight: 600;
     }
 
     h1 { font-size: 3.052em; }
@@ -68,13 +96,15 @@
 
     code {
         padding: 2px 6px;
-        background-color: var(--color-gray-light);
+        background-color: var(--color-code);
         border-radius: 2px;
     }
 
     pre {
         padding: 1.5em;
         border-radius: 8px;
+        background-color: var(--color-pre);
+        color: var(--color-pre-foreground);
     }
 
     pre > code {
@@ -82,18 +112,21 @@
     }
 
     blockquote {
-        border-left: 4px solid var(--color-accent);
+        border-left: 4px solid var(--color-border-accent);
         padding-left: 20px;
         font-size: 1.333em;
+        color: var(--color-surface-foreground);
+        font-style: italic;
     }
 
     hr {
         border: none;
-        border-top: 1px solid var(--color-gray-light);
+        border-top: 1px solid var(--color-border);
     }
 }
 
 .prose p {
+    font-family: var(--font-lora);
     margin-bottom: 2em;
 }
 
