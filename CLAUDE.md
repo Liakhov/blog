@@ -7,7 +7,7 @@ Astro 6 blog deployed to Cloudflare Workers. Currently in early stage with place
 - **Astro 6** (hybrid: SSR default, static pages opt in with `export const prerender = true`)
 - **Tailwind CSS v4** via Vite plugin — semantic color tokens defined in `src/styles/global.css`
 - **Cloudflare Workers** — adapter: `@astrojs/cloudflare`, config: `wrangler.json`
-- **Content Collections** — Markdown/MDX in `src/content/blog/`, schema in `src/content.config.ts`
+- **Content Collections** — Markdown/MDX in `src/content/posts/`, schema in `src/content.config.ts`
 - **Fonts** — Inter (UI), Lora (prose body) via Astro's built-in `fonts` config
 - **pnpm** package manager, Node >= 22.12
 
@@ -17,7 +17,7 @@ Astro 6 blog deployed to Cloudflare Workers. Currently in early stage with place
 src/
 ├── assets/              # Images (optimized by Sharp at build)
 ├── components/          # Small, single-purpose .astro components
-├── content/blog/        # Blog posts as .md/.mdx files
+├── content/posts/        # Blog posts as .md/.mdx files
 ├── layouts/BlogPost.astro  # Sole layout — wraps all content pages
 ├── pages/               # File-based routing
 │   ├── index.astro      # Homepage
