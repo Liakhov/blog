@@ -1,63 +1,46 @@
-# Astro Starter Kit: Blog
+# Personal Blog — Yurii Liakhov
 
-```sh
-pnpm create astro@latest -- --template blog
+Astro 6 blog deployed to Cloudflare Workers.
+
+## Stack
+
+- **Astro 6** — hybrid rendering (SSR default, static pages opt in with `export const prerender = true`)
+- **Tailwind CSS v4** — via Vite plugin, semantic color tokens in `src/styles/global.css`
+- **Cloudflare Workers** — adapter: `@astrojs/cloudflare`, config: `wrangler.json`
+- **Content Collections** — Markdown/MDX posts in `src/content/posts/`, schema in `src/content.config.ts`
+- **Fonts** — Inter (UI) and Lora (prose) via Astro's built-in `fonts` config
+- **pnpm**, Node >= 22.12
+
+## Project Structure
+
+```
+src/
+├── components/           # Card, Header, Footer, FormattedDate
+├── content/posts/        # Blog posts (.md/.mdx)
+├── layouts/
+│   ├── BaseLayout.astro  # HTML shell (head, meta, fonts, OG tags)
+│   ├── HomeLayout.astro  # Homepage with optional recent-posts slot
+│   ├── PageLayout.astro  # Static pages (about, etc.) via Markdown layout
+│   ├── PostLayout.astro  # Single blog post
+│   └── PostsLayout.astro # Post listing page
+├── pages/
+│   ├── index.astro       # Homepage
+│   ├── about.md          # About page (uses PageLayout)
+│   ├── 404.astro         # Not found
+│   ├── posts/            # /posts listing + /posts/:slug detail
+│   ├── robots.txt.ts     # API route
+│   └── rss.xml.js        # RSS feed
+├── styles/global.css     # Tailwind config, color tokens, base styles
+├── consts.ts             # Site-wide constants (title, socials)
+└── content.config.ts     # Content collection schema
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Commands
 
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```bash
+pnpm dev        # Local dev server
+pnpm build      # Production build
+pnpm preview    # Preview production build locally
+pnpm lint       # Run ESLint
+pnpm format     # Run Prettier
 ```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                | Action                                           |
-| :--------------------- | :----------------------------------------------- |
-| `pnpm install`         | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
