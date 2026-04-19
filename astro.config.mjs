@@ -2,7 +2,7 @@
 
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import { defineConfig, fontProviders } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from "@tailwindcss/vite"
 
@@ -33,6 +33,15 @@ export default defineConfig({
 			styles: ["normal", "italic"],
 		},
 	],
+    env: {
+        schema: {
+            PUBLIC_GOOGLE_SITE_VERIFICATION: envField.string({
+                access: "public",
+                context: "client",
+                optional: true,
+            }),
+        },
+    },
     devToolbar: {
         enabled: false
     }
