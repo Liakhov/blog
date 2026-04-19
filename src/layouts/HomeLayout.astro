@@ -1,0 +1,43 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { SITE } from '@/consts';
+
+type Props = {
+  title?: string;
+  description?: string;
+};
+
+const { title = SITE.title, description = SITE.desc } = Astro.props;
+
+const hasRecentPosts = Astro.slots.has('recent-posts');
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+  <main id="main-content" class="wrapper mb-12">
+    <section id="hero" class="pt-8 pb-6">
+      <slot />
+    </section>
+
+    {
+      hasRecentPosts && (
+        <section id="recent-posts" aria-labelledby="recent-posts-heading" class="pt-8">
+          <h2 id="recent-posts-heading" class="text-2xl font-semibold tracking-wide">
+            Recent Posts
+          </h2>
+
+          <slot name="recent-posts" />
+
+          <div class="my-8 text-end">
+            <a href="/posts/" class="hover:text-surface-foreground">
+              All Posts →
+            </a>
+          </div>
+        </section>
+      )
+    }
+  </main>
+  <Footer />
+</BaseLayout>

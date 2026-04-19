@@ -1,0 +1,120 @@
+---
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import type { ImageMetadata } from 'astro';
+import { PUBLIC_GOOGLE_SITE_VERIFICATION } from 'astro:env/client';
+import { SITE } from '@/consts';
+import '@/styles/global.css';
+
+type Props = {
+  title?: string;
+  author?: string;
+  description?: string;
+  ogImage?: string | ImageMetadata;
+  canonicalURL?: string | URL;
+  pubDatetime?: Date;
+  modDatetime?: Date | null;
+  pageType?: 'website' | 'article';
+  noindex?: boolean;
+  scrollSmooth?: boolean;
+};
+
+const {
+  title = SITE.title,
+  author = SITE.author,
+  description = SITE.desc,
+  ogImage,
+  canonicalURL = new URL(Astro.url.pathname, Astro.url),
+  pubDatetime,
+  modDatetime,
+  pageType = 'website',
+  noindex = false,
+  scrollSmooth = false
+} = Astro.props;
+
+// Resolve OG image: imported asset → use .src; string → use as-is; nothing → site default
+const ogImageSrc =
+  typeof ogImage === 'string'
+    ? ogImage
+    : ogImage?.src
+      ? ogImage.src
+      : SITE.ogImage
+        ? `/${SITE.ogImage}`
+        : '/og.png';
+
+const socialImageURL = new URL(ogImageSrc, Astro.url).href;
+
+const ogMeta: [string, string][] = [
+  ['og:type', pageType],
+  ['og:title', title],
+  ['og:description', description],
+  ['og:url', canonicalURL.toString()],
+  ['og:image', socialImageURL]
+];
+
+if (pubDatetime) {
+  ogMeta.push(['article:published_time', pubDatetime.toISOString()]);
+}
+if (modDatetime) {
+  ogMeta.push(['article:modified_time', modDatetime.toISOString()]);
+}
+---
+
+<!doctype html>
+<html dir={SITE.dir} lang={SITE.lang ?? 'en'} class:list={[{ 'scroll-smooth': scrollSmooth }]}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Fonts -->
+    <Font
+      cssVariable="--font-inter"
+      preload={[{ subset: 'latin', weight: 400, style: 'normal' }]}
+    />
+    <Font
+      cssVariable="--font-lora"
+      preload={[
+        { subset: 'latin', weight: 400, style: 'normal' },
+        { subset: 'cyrillic', weight: 400, style: 'normal' }
+      ]}
+    />
+
+    <!-- Primary meta -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={author} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <!-- Open Graph (Twitter reads these as fallback) -->
+    {ogMeta.map(([property, content]) => <meta property={property} content={content} />)}
+
+    <!-- Twitter-only (no OG equivalent) -->
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- RSS feed auto-discovery -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE.title}
+      href={new URL('rss.xml', Astro.site)}
+    />
+
+    {
+      PUBLIC_GOOGLE_SITE_VERIFICATION && (
+        <meta name="google-site-verification" content={PUBLIC_GOOGLE_SITE_VERIFICATION} />
+      )
+    }
+
+    <!-- Per-page head injection -->
+    <slot name="head" />
+
+    <ClientRouter />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
