@@ -1,51 +1,28 @@
 ---
-import { SITE_TITLE } from '../consts';
-import HeaderLink from './HeaderLink.astro';
+import { SITE } from '../consts';
+
+const navLinks = [
+  { href: '/posts', label: 'Posts' },
+  { href: '/about', label: 'About' }
+];
 ---
 
 <header>
-	<nav class="wrapper">
-		<h2><a href="/">{SITE_TITLE}</a></h2>
-		<div class="internal-links">
-			<HeaderLink href="/">Home</HeaderLink>
-			<HeaderLink href="/blog">Blog</HeaderLink>
-			<HeaderLink href="/about">About</HeaderLink>
-		</div>
-	</nav>
+  <nav class="wrapper mb-4 flex items-center justify-between gap-4 py-5">
+    <a class="text-lg font-semibold no-underline transition-colors duration-200" href="/">
+      {SITE.title}
+    </a>
+    <div class="flex items-center gap-4 text-base">
+      {
+        navLinks.map(link => (
+          <a
+            href={link.href}
+            class="text-muted-foreground transition-colors duration-200 hover:text-surface-foreground"
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+  </nav>
 </header>
-<style>
-	header {
-		margin: 0;
-		padding: 0 1em;
-		background-color: var(--color-surface);
-		backdrop-filter: blur(4px);
-		-webkit-backdrop-filter: blur(4px);
-	}
-	h2 {
-		margin: 0;
-		font-size: 1em;
-	}
-
-	h2 a,
-	h2 a.active {
-		text-decoration: none;
-	}
-	nav {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	nav a {
-		padding: 1em 0.5em;
-		color: var(--color-surface-foreground);
-		border-bottom: 4px solid transparent;
-		text-decoration: none;
-	}
-	nav a:hover {
-		color: var(--color-surface-foreground);
-	}
-	nav a.active {
-		text-decoration: none;
-		border-bottom-color: var(--color-surface-foreground);
-	}
-</style>
