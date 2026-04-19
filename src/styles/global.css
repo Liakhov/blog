@@ -1,138 +1,157 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme inline {
-    /* Background & Foreground */
-    --color-background: #f5f5f4;
-    --color-foreground: #00000080;
+  /* Background & Foreground */
+  --color-background: #f5f5f4;
+  --color-foreground: #00000080;
 
-    /* Surface — header, cards, elevated containers */
-    --color-surface: #f5f5f4bf;
-    --color-surface-foreground: #000000;
+  /* Surface — header, cards, elevated containers */
+  --color-surface: #f5f5f4bf;
+  --color-surface-foreground: #000000;
 
-    /* Muted — captions, dates, secondary text */
-    --color-muted: #0000000d;
-    --color-muted-foreground: #00000060;
+  /* Muted — captions, dates, secondary text */
+  --color-muted: #0000000d;
+  --color-muted-foreground: #00000060;
 
-    /* Border */
-    --color-border: #00000015;
-    --color-border-accent: #00000026;
-    --color-border-accent-hover: #00000040;
+  /* Border */
+  --color-border: #00000015;
+  --color-border-accent: #00000026;
+  --color-border-accent-hover: #00000040;
 
-    /* Code */
-    --color-code: #0000000d;
-    --color-code-foreground: inherit;
-    --color-pre: #1c1917;
-    --color-pre-foreground: #e5e7eb;
+  /* Code */
+  --color-code: #0000000d;
+  --color-code-foreground: inherit;
+  --color-pre: #1c1917;
+  --color-pre-foreground: #e5e7eb;
 }
 
 @layer base {
-    html {
-        overflow-y: scroll;
-        scroll-behavior: smooth;
-        color-scheme: light;
-    }
+  html {
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
 
-    body {
-        display: flex;
-        flex-direction: column;
-        min-height: 100svh;
-        font-family: var(--font-inter);
-        font-size: 18px;
-        line-height: 1.7;
-        background-color: var(--color-background);
-        color: var(--color-foreground);
-        overflow-wrap: break-word;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        @media (min-width: 720px) { font-size: 20px; }
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    font-family: var(--font-inter);
+    font-size: 18px;
+    line-height: 1.7;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @media (min-width: 720px) {
+      font-size: 20px;
     }
+  }
 
-    a,
-    button {
-        outline-offset: 1px;
-        outline-color: currentColor;
-        &:focus-visible {
-            text-decoration: none;
-            outline-width: 2px;
-            outline-style: dashed;
-        }
+  a,
+  button {
+    outline-offset: 1px;
+    outline-color: currentColor;
+    &:focus-visible {
+      text-decoration: none;
+      outline-width: 2px;
+      outline-style: dashed;
     }
+  }
 
-    a {
-        color: inherit;
-        text-decoration-line: underline;
-        text-underline-offset: 2px;
-        text-decoration-color: var(--color-border-accent);
-        transition: color 0.3s ease, text-decoration-color 0.3s ease;
-        &:hover {
-            color: var(--color-surface-foreground);
-            text-decoration-color: var(--color-border-accent-hover);
-        }
+  a {
+    color: inherit;
+    text-decoration-line: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: var(--color-border-accent);
+    transition:
+      color 0.3s ease,
+      text-decoration-color 0.3s ease;
+    &:hover {
+      color: var(--color-surface-foreground);
+      text-decoration-color: var(--color-border-accent-hover);
     }
+  }
 
-    button:not(:disabled),
-    [role="button"]:not(:disabled) {
-        cursor: pointer;
-    }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 
-    h1, h2, h3, h4, h5, h6 {
-        color: var(--color-surface-foreground);
-        font-weight: 600;
-    }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-surface-foreground);
+    font-weight: 600;
+  }
 
-    h1 { font-size: 3.052em; }
-    h2 { font-size: 2.441em; }
-    h3 { font-size: 1.953em; }
-    h4 { font-size: 1.563em; }
-    h5 { font-size: 1.25em; }
+  h1 {
+    font-size: 3.052em;
+  }
+  h2 {
+    font-size: 2.441em;
+  }
+  h3 {
+    font-size: 1.953em;
+  }
+  h4 {
+    font-size: 1.563em;
+  }
+  h5 {
+    font-size: 1.25em;
+  }
 
-    p {
-        margin-bottom: 1em;
-    }
+  p {
+    margin-bottom: 1em;
+  }
 
-    img {
-        border-radius: 8px;
-    }
+  img {
+    border-radius: 8px;
+  }
 
-    code {
-        padding: 2px 6px;
-        background-color: var(--color-code);
-        border-radius: 2px;
-    }
+  code {
+    padding: 2px 6px;
+    background-color: var(--color-code);
+    border-radius: 2px;
+  }
 
-    pre {
-        padding: 1.5em;
-        border-radius: 8px;
-        background-color: var(--color-pre);
-        color: var(--color-pre-foreground);
-    }
+  pre {
+    padding: 1.5em;
+    border-radius: 8px;
+    background-color: var(--color-pre);
+    color: var(--color-pre-foreground);
+  }
 
-    pre > code {
-        all: unset;
-    }
+  pre > code {
+    all: unset;
+  }
 
-    blockquote {
-        border-left: 4px solid var(--color-border-accent);
-        padding-left: 20px;
-        font-size: 1.333em;
-        color: var(--color-surface-foreground);
-        font-style: italic;
-    }
+  blockquote {
+    border-left: 4px solid var(--color-border-accent);
+    padding-left: 20px;
+    font-size: 1.333em;
+    color: var(--color-surface-foreground);
+    font-style: italic;
+  }
 
-    hr {
-        border: none;
-        border-top: 1px solid var(--color-border);
-    }
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+  }
 }
 
 .prose p {
-    font-family: var(--font-lora);
-    margin-bottom: 2em;
+  font-family: var(--font-lora);
+  margin-bottom: 2em;
 }
 
 @utility wrapper {
-    margin-inline: auto;
-    width: 100%;
-    max-width: 48rem;
-    padding-inline: 1rem;
+  margin-inline: auto;
+  width: 100%;
+  max-width: 48rem;
+  padding-inline: 1rem;
 }
