@@ -1,5 +1,10 @@
-// Place any global data in this file.
-// You can import this data from anywhere in your site by using the `import` keyword.
-
-export const SITE_TITLE = 'Blog';
-export const SITE_DESCRIPTION = 'Welcome to my website!';
+export const SITE = {
+  website: "",
+  author: "Yurii Liakhov",
+  profile: "https://github.com/Liakhov",
+  desc: "Personal blog by Yurii Liakhov — software engineering, AI, and side projects.",
+  title: "Yurii Liakhov",
+  dir: "ltr",
+  lang: "en",
+  timezone: "Europe/Kyiv",
+} as const;
