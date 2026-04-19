@@ -15,19 +15,25 @@ Astro 6 blog deployed to Cloudflare Workers. Currently in early stage with place
 
 ```
 src/
-├── assets/              # Images (optimized by Sharp at build)
-├── components/          # Small, single-purpose .astro components
-├── content/posts/        # Blog posts as .md/.mdx files
-├── layouts/BlogPost.astro  # Sole layout — wraps all content pages
-├── pages/               # File-based routing
-│   ├── index.astro      # Homepage
-│   ├── about.astro      # About page (reuses BlogPost layout)
-│   ├── posts/           # /posts listing + /posts/:slug detail
-│   └── robots.txt.ts    # API route
-├── styles/global.css    # Tailwind config, color tokens, base styles
-├── consts.ts            # Site-wide constants (title, description)
-├── content.config.ts    # Content collection schema
-└── middleware.ts         # Placeholder (no-op)
+├── components/           # Card, Header, Footer, FormattedDate
+├── content/posts/        # Blog posts (.md/.mdx)
+├── layouts/
+│   ├── BaseLayout.astro  # HTML shell (head, meta, fonts, OG tags)
+│   ├── HomeLayout.astro  # Homepage with optional recent-posts slot
+│   ├── PageLayout.astro  # Static pages (about, etc.) via Markdown layout
+│   ├── PostLayout.astro  # Single blog post
+│   └── PostsLayout.astro # Post listing page
+├── pages/
+│   ├── index.astro       # Homepage
+│   ├── about.md          # About page (uses PageLayout)
+│   ├── 404.astro         # Not found
+│   ├── posts/            # /posts listing + /posts/:slug detail
+│   ├── robots.txt.ts     # API route
+│   └── rss.xml.js        # RSS feed
+├── styles/global.css     # Tailwind config, color tokens, base styles
+├── consts.ts             # Site-wide constants (title, socials)
+├── content.config.ts     # Content collection schema
+└── middleware.ts          # Placeholder (no-op)
 ```
 
 ## Commands
@@ -43,7 +49,7 @@ pnpm preview    # Preview production build locally
 - Follow existing patterns — before creating or editing a component/page, search the codebase for similar examples and match their structure, naming, and approach
 - Use Tailwind utility classes — prefer Tailwind classes over scoped `<style>` blocks or inline styles
 - Every static page exports `prerender = true` at the top of frontmatter
-- Pages are full HTML documents — no shared layout wrapper; each composes `<BaseHead>`, `<Header>`, `<Footer>` directly
+- Pages use layout components (HomeLayout, PageLayout, PostLayout, PostsLayout) which wrap BaseLayout + Header + Footer
 - Use semantic color tokens from `global.css` (`--color-background`, `--color-surface`, `--color-muted-foreground`, etc.) — never raw color values
 - Use the `wrapper` utility class for horizontal page containment (48rem max-width)
 - Blog post frontmatter schema: `title`, `description`, `pubDate` (required); `updatedDate`, `heroImage` (optional)
