@@ -6,16 +6,20 @@ import HomeLayout from '@/layouts/HomeLayout.astro';
 import Card from '@/components/Card.astro';
 
 const posts = await getCollection('posts', ({ data }) => !data.draft);
-const recent = posts
+const sortedPosts = posts
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 4);
 ---
 
 <HomeLayout>
-  <h1 class="text-3xl font-bold sm:text-4xl">Hi, I'm ...</h1>
-  <p class="mt-4">Short intro paragraph.</p>
+  <h4>Hi, I'm Yurii 👋🏻</h4>
+  <p>
+    I am a Software Engineer from Ukraine. I work with Angular, SvelteKit, TypeScript, Node.js, and
+    Prisma across the full stack. Here I share practical things I've picked up while building real
+    projects — and my experiments with AI tooling along the way.
+  </p>
 
-  <ul slot="recent-posts" class="mt-4">
-    {recent.map(post => <Card {...post} />)}
+  <ul slot="recent-posts">
+    {sortedPosts.map(post => <Card {...post} />)}
   </ul>
 </HomeLayout>
