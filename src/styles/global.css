@@ -1,7 +1,10 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
-:root {
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root,
+html[data-theme='light'] {
   --background: #fdfdfd;
   --foreground: #282728;
 
@@ -12,6 +15,19 @@
   --muted-fg: #00000060;
 
   --border: #00000015;
+}
+
+html[data-theme='dark'] {
+  --background: #1c1917;
+  --foreground: #ffffffbf;
+
+  --surface: #262626bf;
+  --surface-fg: #ffffff;
+
+  --muted: #ffffff1a;
+  --muted-fg: #a3a3a3;
+
+  --border: #ffffff1a;
 }
 
 @theme inline {
