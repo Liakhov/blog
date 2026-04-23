@@ -2,7 +2,7 @@
 
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import { defineConfig, envField, fontProviders } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -15,24 +15,6 @@ export default defineConfig({
   },
   output: 'server',
   adapter: cloudflare(),
-  fonts: [
-    {
-      name: 'Inter',
-      cssVariable: '--font-inter',
-      provider: fontProviders.google(),
-      fallbacks: ['ui-sans-serif', 'system-ui', 'sans-serif'],
-      weights: [400, 500, 600, 700],
-      styles: ['normal']
-    },
-    {
-      name: 'Lora',
-      cssVariable: '--font-lora',
-      provider: fontProviders.google(),
-      fallbacks: ['Georgia', 'serif'],
-      weights: [400, 500, 600, 700],
-      styles: ['normal', 'italic']
-    }
-  ],
   env: {
     schema: {
       PUBLIC_GOOGLE_SITE_VERIFICATION: envField.string({
