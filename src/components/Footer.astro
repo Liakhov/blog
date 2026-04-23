@@ -11,26 +11,28 @@ const links = [
 ];
 ---
 
-<footer
-  class="wrapper flex flex-col items-center justify-center py-5 text-sm sm:flex-row sm:justify-between"
->
-  <div class="flex items-center">
-    <span>&#169; {currentYear}</span>
-    <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
-    <span>{SITE.title}</span>
-  </div>
+<footer class="wrapper py-5">
+  <div
+    class="flex flex-col items-center justify-center border-t border-border pt-5 text-sm sm:flex-row sm:justify-between"
+  >
+    <div class="flex items-center text-muted-foreground">
+      <span>&#169; {currentYear}</span>
+      <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
+      <span>{SITE.title}</span>
+    </div>
 
-  <div class="flex items-center gap-6 text-sm">
-    {
-      links.map(link => (
-        <a
-          href={link.href}
-          class="text-muted-foreground transition-colors duration-200 hover:text-surface-foreground"
-          {...(link.href.startsWith('http') && { target: '_blank', rel: 'noopener noreferrer' })}
-        >
-          {link.label}
-        </a>
-      ))
-    }
+    <div class="flex items-center gap-6 text-sm">
+      {
+        links.map(link => (
+          <a
+            href={link.href}
+            class="text-muted-foreground transition-colors duration-200 hover:text-surface-foreground"
+            {...(link.href.startsWith('http') && { target: '_blank', rel: 'noopener noreferrer' })}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
   </div>
 </footer>

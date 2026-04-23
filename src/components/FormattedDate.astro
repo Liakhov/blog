@@ -1,4 +1,6 @@
 ---
+import Calendar from '@/assets/icons/calendar.svg';
+
 interface Props {
   date: Date;
 }
@@ -6,12 +8,16 @@ interface Props {
 const { date } = Astro.props;
 ---
 
-<time class="font-mono text-xs tabular-nums" datetime={date.toISOString()}>
-  {
-    date.toLocaleDateString('en-us', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-</time>
+<div class="flex items-center gap-x-2 text-foreground">
+  <Calendar class:list={['inline-block size-4']} />
+
+  <time class="text-sm" datetime={date.toISOString()}>
+    {
+      date.toLocaleDateString('en-us', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    }
+  </time>
+</div>
