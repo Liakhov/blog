@@ -15,10 +15,10 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'posts'>;
 
 const post = Astro.props;
-const { title, description } = post.data;
+const { title, description, pubDate } = post.data;
 const { Content } = await render(post);
 ---
 
-<PostLayout {title} {description}>
+<PostLayout {title} {description} {pubDate}>
   <Content />
 </PostLayout>

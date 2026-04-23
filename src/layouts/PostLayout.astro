@@ -2,22 +2,27 @@
 import BaseLayout from './BaseLayout.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import FormattedDate from '@/components/FormattedDate.astro';
 import { SITE } from '@/consts';
 
 type Props = {
   title: string;
   description?: string;
+  pubDate: Date;
 };
 
-const { title, description } = Astro.props;
+const { title, description, pubDate } = Astro.props;
 ---
 
 <BaseLayout title={`${title} | ${SITE.title}`} description={description}>
   <Header />
 
-  <main id="main-content" class="wrapper mb-12">
-    <h1 class="text-2xl tracking-wider sm:text-3xl">{title}</h1>
-    <article class="prose mt-4 w-full">
+  <main id="main-content" class="wrapper mt-4 mb-12">
+    <h1 class="text-2xl font-semibold">{title}</h1>
+    <div class="mt-4 flex items-center gap-2">
+      <FormattedDate date={pubDate} />
+    </div>
+    <article class="app-prose mt-5">
       <slot />
     </article>
   </main>

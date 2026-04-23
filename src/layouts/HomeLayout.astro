@@ -16,21 +16,21 @@ const hasRecentPosts = Astro.slots.has('recent-posts');
 
 <BaseLayout title={title} description={description}>
   <Header />
-  <main id="main-content" class="wrapper mb-12">
-    <section id="hero" class="pt-8 pb-6">
+  <main id="main-content" class="wrapper mt-4 mb-12">
+    <section id="hero" class="space-y-4 border-b border-border pb-6">
       <slot />
     </section>
 
     {
       hasRecentPosts && (
         <section id="recent-posts" aria-labelledby="recent-posts-heading" class="pt-8">
-          <h2 id="recent-posts-heading" class="text-2xl font-semibold tracking-wide">
+          <h2 id="recent-posts-heading" class="text-xl font-semibold">
             Recent Posts
           </h2>
 
           <slot name="recent-posts" />
 
-          <div class="my-8 text-end">
+          <div class="mt-8 text-center">
             <a href="/posts/" class="hover:text-surface-foreground">
               All Posts →
             </a>

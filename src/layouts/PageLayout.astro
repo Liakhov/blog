@@ -11,9 +11,9 @@ const { title, description } = 'frontmatter' in props ? props.frontmatter : prop
 
 <BaseLayout title={`${title} | ${SITE.title}`} description={description}>
   <Header />
-  <main id="main-content" class="wrapper mb-12">
-    <section class="prose">
-      <h1 class="text-2xl tracking-wider sm:text-3xl">{title}</h1>
+  <main id="main-content" class="wrapper mt-4 mb-12">
+    <h1 class="text-2xl font-semibold">{title}</h1>
+    <section class="app-prose mt-5">
       <slot />
     </section>
   </main>
