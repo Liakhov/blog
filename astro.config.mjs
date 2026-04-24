@@ -24,6 +24,12 @@ export default defineConfig({
       })
     }
   },
+  markdown: {
+    shikiConfig: {
+      theme: 'material-theme'
+    }
+  },
+
   devToolbar: {
     enabled: false
   }
