@@ -30,6 +30,16 @@ html[data-theme='dark'] {
   --border: #ffffff1a;
 }
 
+/* Light theme: show moon icon (click to switch to dark) */
+[data-theme='light'] .moon-icon {
+  display: block;
+}
+
+/* Dark theme: show sun icon (click to switch to light) */
+[data-theme='dark'] .sun-icon {
+  display: block;
+}
+
 @theme inline {
   /* Background & Foreground */
   --color-background: var(--background);

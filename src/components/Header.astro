@@ -1,5 +1,7 @@
 ---
 import { SITE } from '../consts';
+import Moon from '@/assets/icons/Moon.svg';
+import Sun from '@/assets/icons/Sun.svg';
 
 const navLinks = [
   { href: '/posts', label: 'Posts' },
@@ -15,17 +17,23 @@ const navLinks = [
     >
       {SITE.title}
     </a>
-    <div class="flex items-center gap-4 text-base">
-      {
-        navLinks.map(link => (
-          <a
-            href={link.href}
-            class="text-muted-foreground transition-colors duration-200 hover:text-surface-foreground"
-          >
-            {link.label}
-          </a>
-        ))
-      }
+    <div class="flex items-center">
+      <div class="flex items-center gap-5 text-base">
+        {
+          navLinks.map(link => (
+            <a
+              href={link.href}
+              class="text-muted-foreground transition-colors duration-200 hover:text-surface-foreground"
+            >
+              {link.label}
+            </a>
+          ))
+        }
+      </div>
+      <button id="theme-btn" type="button" class="ml-12 transition-all duration-200">
+        <Moon class="moon-icon hidden size-5" />
+        <Sun class="sun-icon hidden size-5" />
+      </button>
     </div>
   </nav>
 </header>

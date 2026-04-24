@@ -96,6 +96,47 @@ if (modDatetime) {
       )
     }
 
+    <script is:inline>
+      (function () {
+        const THEME_KEY = 'theme';
+        const Themes = { LIGHT: 'light', DARK: 'dark' };
+        const initialColorScheme = ''; // Set to "light" or "dark" to override system default
+
+        /**
+         * Determines the preferred theme
+         */
+        function getPreferTheme() {
+          const storedTheme = localStorage.getItem(THEME_KEY);
+          if (storedTheme) return storedTheme;
+
+          if (initialColorScheme) return initialColorScheme;
+
+          return window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? Themes.DARK
+            : Themes.LIGHT;
+        }
+
+        const themeValue = getPreferTheme();
+
+        // 1. Set the data-theme attribute on <html> immediately
+        // document.documentElement is faster and more reliable than firstElementChild
+        document.documentElement.setAttribute('data-theme', themeValue);
+
+        // 2. Minimal Global API to be picked up by the main script later
+        window.theme = {
+          themeValue: themeValue,
+          getTheme: () => window.theme.themeValue,
+          setTheme: val => {
+            window.theme.themeValue = val;
+            // This will be overridden by the full script later,
+            // but works as a fallback if the main script is slow to load
+            document.documentElement.setAttribute('data-theme', val);
+            localStorage.setItem(THEME_KEY, val);
+          }
+        };
+      })();
+    </script>
+
     <!-- Per-page head injection -->
     <slot name="head" />
 
@@ -103,5 +144,7 @@ if (modDatetime) {
   </head>
   <body>
     <slot />
+
+    <script src="../scripts/theme-handler.ts"></script>
   </body>
 </html>
