@@ -1,6 +1,5 @@
 const THEME_KEY = 'theme';
-const Themes = { LIGHT: 'light', DARK: 'dark' } as const;
-type Theme = (typeof Themes)[keyof typeof Themes];
+const Themes = { LIGHT: 'light', DARK: 'dark' } as const satisfies Record<string, Theme>;
 
 // 1. Pick up the value already set by the inline script in <head>
 let themeValue: Theme = (window.theme?.themeValue as Theme) ?? Themes.LIGHT;
@@ -22,16 +21,6 @@ function reflectPreference(): void {
 function setPreference(): void {
   localStorage.setItem(THEME_KEY, themeValue);
   reflectPreference();
-}
-
-interface Window {
-  theme: {
-    themeValue: string;
-    getTheme: () => string;
-    setTheme: (val: Theme) => void;
-    s?: () => void;
-    reflectPreference?: () => void;
-  };
 }
 
 // 2. Upgrade the minimal inline API to a full-featured one
