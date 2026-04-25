@@ -22,11 +22,15 @@
     "@astrojs/sitemap": "^3.7.2",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.7",
+    "isbot": "^5.1.39",
     "sharp": "^0.34.3",
-    "tailwindcss": "^4.2.2"
+    "tailwindcss": "^4.2.2",
+    "ua-parser-js": "^2.0.9"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260424.1",
     "@tailwindcss/typography": "^0.5.19",
+    "@types/ua-parser-js": "^0.7.39",
     "eslint": "^10.2.1",
     "eslint-plugin-astro": "^1.7.0",
     "globals": "^17.5.0",

@@ -5,6 +5,7 @@
   "compilerOptions": {
     "strictNullChecks": true,
     "baseUrl": ".",
+    "types": ["@cloudflare/workers-types"],
     "paths": {
       "@/*": ["./src/*"]
     }
