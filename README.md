@@ -10,7 +10,7 @@ Astro 6 blog deployed to Cloudflare Workers.
 - **Cloudflare D1** — SQLite database for analytics storage
 - **Content Collections** — Markdown/MDX posts in `src/content/posts/`, schema in `src/content.config.ts`
 - **Fonts** — Inter (UI) and Lora (prose) via Astro's built-in `fonts` config
-- **pnpm**, Node >= 22.12
+- **pnpm**, Node >= 24
 
 ## Analytics
 
@@ -25,7 +25,8 @@ Privacy-first pageview tracking — no cookies, no client-side JS, no third-part
 
 ```
 src/
-├── components/           # Card, Header, Footer, FormattedDate
+├── assets/icons/         # SVG icons (arrow-left, calendar, moon, sun)
+├── components/           # Card, Header, Footer, FormattedDate, StatsList
 ├── content/posts/        # Blog posts (.md/.mdx)
 ├── layouts/
 │   ├── BaseLayout.astro  # HTML shell (head, meta, fonts, OG tags)
@@ -33,16 +34,28 @@ src/
 │   ├── PageLayout.astro  # Static pages (about, etc.) via Markdown layout
 │   ├── PostLayout.astro  # Single blog post
 │   └── PostsLayout.astro # Post listing page
+├── lib/
+│   ├── analytics/        # Privacy-first pageview tracking (no cookies, no client JS)
+│   │   ├── cron.ts       # Daily rollup cron job
+│   │   ├── db.ts         # D1 query helpers
+│   │   ├── hash.ts       # Daily-rotating SHA-256 visitor hash
+│   │   ├── ip.ts         # IP anonymization
+│   │   ├── track.ts      # Tracking orchestrator (called from middleware)
+│   │   └── ua.ts         # User-Agent parsing
+│   └── types.ts          # Shared type definitions
 ├── pages/
 │   ├── index.astro       # Homepage
 │   ├── about.md          # About page (uses PageLayout)
 │   ├── 404.astro         # Not found
-│   ├── posts/            # /posts listing + /posts/:slug detail
-│   ├── robots.txt.ts     # API route
-│   └── rss.xml.js        # RSS feed
+│   ├── api/cron.ts       # Cron API endpoint
+│   └── posts/            # /posts listing + /posts/:slug detail
+├── scripts/
+│   └── theme-handler.ts  # Dark/light theme toggle logic
 ├── styles/global.css     # Tailwind config, color tokens, base styles
 ├── consts.ts             # Site-wide constants (title, socials)
-└── content.config.ts     # Content collection schema
+├── content.config.ts     # Content collection schema
+├── env.d.ts              # TypeScript environment declarations
+└── middleware.ts          # Analytics tracking via waitUntil()
 ```
 
 ## Getting Started
