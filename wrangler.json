@@ -8,5 +8,12 @@
   },
   "observability": {
     "enabled": true
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "blog",
+      "database_id": "07a1fb44-7b62-4692-8897-404f14451e1a"
+    }
+  ]
 }

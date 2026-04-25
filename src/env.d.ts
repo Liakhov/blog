@@ -9,3 +9,8 @@ interface Window {
     reflectPreference?: () => void;
   };
 }
+
+interface CloudflareEnv {
+  DB: D1Database;
+  ANALYTICS_SALT: string;
+}

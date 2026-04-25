@@ -1,6 +1,7 @@
 import { visitorHash } from './hash';
 import { isbot } from 'isbot';
 import { parseUA } from './ua';
+import { insertPageview } from './db';
 
 const SKIP_EXTENSIONS = /\.(css|js|ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|map|xml|json)$/;
 const SKIP_PREFIXES = ['/stats', '/_', '/api/'];
@@ -36,5 +37,14 @@ export async function trackPageview(request: Request, db: D1Database, salt: stri
     }
   }
 
-  // TODO: save to analytics data to the DB
+  await insertPageview(db, {
+    visitorId: vid,
+    path,
+    referrer: cleanReferrer,
+    country,
+    browser,
+    os,
+    device,
+    isBot: false
+  });
 }
