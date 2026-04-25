@@ -7,6 +7,7 @@ Astro 6 blog deployed to Cloudflare Workers. Currently in early stage with place
 - **Astro 6** (hybrid: SSR default, static pages opt in with `export const prerender = true`)
 - **Tailwind CSS v4** via Vite plugin — semantic color tokens defined in `src/styles/global.css`
 - **Cloudflare Workers** — adapter: `@astrojs/cloudflare`, config: `wrangler.json`
+- **Cloudflare D1** — SQLite database for analytics, schema in `migrations/0001_analytics.sql`
 - **Content Collections** — Markdown/MDX in `src/content/posts/`, schema in `src/content.config.ts`
 - **Fonts** — Inter (UI), Lora (prose body) via Astro's built-in `fonts` config
 - **pnpm** package manager, Node >= 22.12
@@ -31,17 +32,28 @@ src/
 │   ├── robots.txt.ts     # API route
 │   └── rss.xml.js        # RSS feed
 ├── styles/global.css     # Tailwind config, color tokens, base styles
+├── lib/
+│   └── analytics/        # Privacy-first pageview tracking (no cookies, no client JS)
+│       ├── track.ts      # Tracking orchestrator (called from middleware)
+│       ├── db.ts         # D1 query helpers
+│       ├── hash.ts       # Daily-rotating SHA-256 visitor hash
+│       ├── ip.ts         # IP anonymization
+│       └── ua.ts         # User-Agent parsing
 ├── consts.ts             # Site-wide constants (title, socials)
 ├── content.config.ts     # Content collection schema
-└── middleware.ts          # Placeholder (no-op)
+└── middleware.ts          # Analytics tracking via waitUntil()
 ```
 
 ## Commands
 
 ```bash
-pnpm dev        # Local dev server
-pnpm build      # Production build
-pnpm preview    # Preview production build locally
+pnpm dev            # Local dev server
+pnpm build          # Production build
+pnpm preview        # Preview production build locally
+pnpm lint           # Run ESLint
+pnpm lint:fix       # Run ESLint with auto-fix
+pnpm format         # Format all files with Prettier
+pnpm format:check   # Check formatting without writing
 ```
 
 ## Key Conventions
