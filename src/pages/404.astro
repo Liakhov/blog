@@ -2,6 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import ArrowLeft from '@/assets/icons/arrow-left.svg';
 import { SITE } from '@/consts';
 ---
 
@@ -12,9 +13,11 @@ import { SITE } from '@/consts';
     <div class="mb-14 flex flex-col items-center justify-center">
       <h1 class="text-3xl font-bold sm:text-4xl">404</h1>
       <p class="mt-4">Page Not Found</p>
-      <a href="/" class="my-6"> Go back home </a>
+      <div class="mt-6 flex items-center justify-between gap-x-2">
+        <ArrowLeft class="size-4" />
+        <a href="/"> Go back home </a>
+      </div>
     </div>
   </main>
-
   <Footer />
 </BaseLayout>
