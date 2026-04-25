@@ -14,6 +14,9 @@ export async function trackPageview(request: Request, db: D1Database, salt: stri
     return;
   }
 
+  const purpose = request.headers.get('purpose') ?? request.headers.get('sec-purpose');
+  if (purpose === 'prefetch') return;
+
   const ua = request.headers.get('user-agent') ?? '';
 
   if (isbot(ua)) return;
