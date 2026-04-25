@@ -3,7 +3,7 @@ import { isbot } from 'isbot';
 import { parseUA } from './ua';
 import { insertPageview } from './db';
 
-const SKIP_EXTENSIONS = /\.(css|js|ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|map|xml|json)$/;
+const SKIP_EXTENSIONS = /\.(css|js|ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|map|xml|json|php)$/;
 const SKIP_PREFIXES = ['/stats', '/_', '/api/'];
 
 export async function trackPageview(request: Request, db: D1Database, salt: string): Promise<void> {
@@ -19,7 +19,7 @@ export async function trackPageview(request: Request, db: D1Database, salt: stri
 
   const ua = request.headers.get('user-agent') ?? '';
 
-  if (isbot(ua)) return;
+  if (!ua || isbot(ua)) return;
 
   const ip = request.headers.get('cf-connecting-ip') ?? '0.0.0.0';
   const referrer = request.headers.get('referer');
