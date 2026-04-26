@@ -1,14 +1,16 @@
-import { visitorHash } from './hash';
+import { defineMiddleware } from 'astro:middleware';
+import { env } from 'cloudflare:workers';
 import { isbot } from 'isbot';
+import { visitorHash } from './hash';
 import { parseUA } from './ua';
 import { insertPageview } from './db';
 
-const SKIP_EXTENSIONS = /\.(css|js|ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|map|xml|json|php)$/;
+const SKIP_EXTENSIONS = /\.(css|js|ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|map|xml|json)$/;
 const SKIP_PREFIXES = ['/stats', '/_', '/api/'];
 
-export async function trackPageview(request: Request, db: D1Database, salt: string): Promise<void> {
+async function trackPageview(request: Request, db: D1Database, salt: string): Promise<void> {
   const url = new URL(request.url);
-  const path = url.pathname.replace(/\/+$/, '') || '/';
+  const path = (url.pathname.replace(/\/+$/, '') || '/').toLowerCase();
 
   if (SKIP_EXTENSIONS.test(path) || SKIP_PREFIXES.some(p => path.startsWith(p))) {
     return;
@@ -51,3 +53,23 @@ export async function trackPageview(request: Request, db: D1Database, salt: stri
     isBot: false
   });
 }
+
+export const track = defineMiddleware((context, next) => {
+  const cfContext = context.locals.cfContext;
+
+  if (!cfContext) return next();
+
+  const db = (env as unknown as CloudflareEnv).DB;
+  const salt = (env as unknown as CloudflareEnv).ANALYTICS_SALT;
+  if (!salt) {
+    console.warn('[analytics] ANALYTICS_SALT is not set — tracking disabled');
+    return next();
+  }
+
+  cfContext.waitUntil(
+    trackPageview(context.request, db, salt).catch(err => {
+      console.error('[analytics]', err);
+    })
+  );
+  return next();
+});
