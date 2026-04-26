@@ -7,7 +7,7 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import StatsList from '@/components/StatsList.astro';
 
-const db = (env as unknown as CloudflareEnv).DB;
+const db = env.DB;
 const data = await getDashboardData(db);
 
 const totalViews7d = data.last7Days.reduce((sum, r) => sum + r.views, 0);

@@ -59,8 +59,8 @@ export const track = defineMiddleware((context, next) => {
 
   if (!cfContext) return next();
 
-  const db = (env as unknown as CloudflareEnv).DB;
-  const salt = (env as unknown as CloudflareEnv).ANALYTICS_SALT;
+  const db = env.DB;
+  const salt = env.ANALYTICS_SALT;
   if (!salt) {
     console.warn('[analytics] ANALYTICS_SALT is not set — tracking disabled');
     return next();

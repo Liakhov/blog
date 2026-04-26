@@ -10,7 +10,10 @@ interface Window {
   };
 }
 
-interface CloudflareEnv {
-  DB: D1Database;
-  ANALYTICS_SALT: string;
+declare namespace Cloudflare {
+  interface Env {
+    DB: D1Database;
+    ANALYTICS_SALT: string;
+    CRON_SECRET: string;
+  }
 }
