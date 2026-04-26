@@ -6,5 +6,4 @@ export interface PageviewEvent {
   browser: string | null;
   os: string | null;
   device: string | null;
-  isBot: boolean;
 }

@@ -3,8 +3,8 @@ import type { PageviewEvent } from './../types';
 export async function insertPageview(db: D1Database, event: PageviewEvent): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO pageview_events (visitor_id, path, referrer, country, browser, os, device, is_bot)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO pageview_events (visitor_id, path, referrer, country, browser, os, device)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       event.visitorId,
@@ -13,8 +13,7 @@ export async function insertPageview(db: D1Database, event: PageviewEvent): Prom
       event.country,
       event.browser,
       event.os,
-      event.device,
-      event.isBot ? 1 : 0
+      event.device
     )
     .run();
 }
@@ -24,7 +23,7 @@ export async function getDashboardData(db: D1Database) {
     db.prepare(`
       SELECT COUNT(*) as views, COUNT(DISTINCT visitor_id) as visitors
       FROM pageview_events
-      WHERE date(created_at) = date('now') AND is_bot = 0
+      WHERE date(created_at) = date('now')
     `),
     db.prepare(`
       SELECT date, SUM(views) as views, SUM(visitors) as visitors

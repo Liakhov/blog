@@ -49,8 +49,7 @@ async function trackPageview(request: Request, db: D1Database, salt: string): Pr
     country,
     browser,
     os,
-    device,
-    isBot: false
+    device
   });
 }
 
