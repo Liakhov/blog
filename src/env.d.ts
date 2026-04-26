@@ -14,6 +14,5 @@ declare namespace Cloudflare {
   interface Env {
     DB: D1Database;
     ANALYTICS_SALT: string;
-    CRON_SECRET: string;
   }
 }
