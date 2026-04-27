@@ -5,5 +5,6 @@ export interface PageviewEvent {
   country: string | null;
   browser: string | null;
   os: string | null;
-  device: string | null;
+  device: 'desktop' | 'mobile' | 'tablet';
+  createdAt: string;
 }

@@ -49,7 +49,8 @@ async function trackPageview(request: Request, db: D1Database, salt: string): Pr
     country,
     browser,
     os,
-    device
+    device,
+    createdAt: new Date().toISOString()
   });
 }
 
