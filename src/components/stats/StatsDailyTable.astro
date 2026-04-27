@@ -1,0 +1,53 @@
+---
+interface Row {
+  date: string;
+  views: number;
+  visitors: number;
+}
+
+interface Props {
+  title: string;
+  rows: Row[];
+  scrollable?: boolean; // adds max-height + sticky header for 30-day view
+}
+
+const { title, rows, scrollable = false } = Astro.props;
+---
+
+<section class="mt-10">
+  <h2 class="text-base font-semibold">{title}</h2>
+  {
+    rows.length > 0 ? (
+      <div
+        class:list={[
+          'mt-3 rounded-lg border border-border',
+          scrollable ? 'max-h-80 overflow-y-auto' : 'overflow-x-auto'
+        ]}
+      >
+        <table class="w-full text-sm">
+          <thead class:list={[scrollable && 'sticky top-0']}>
+            <tr class="border-b border-border bg-surface [&_th]:text-xs [&_th]:font-medium [&_th]:text-muted-foreground">
+              <th class="px-4 py-2.5 text-left">Date</th>
+              <th class="px-4 py-2.5 text-right">Views</th>
+              <th class="px-4 py-2.5 text-right">Visitors</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            {rows
+              .slice()
+              .reverse()
+              .map(row => (
+                <tr class="[&_td]:px-4 [&_td]:py-2.5">
+                  <td>{row.date}</td>
+                  <td class="text-right tabular-nums">{row.views}</td>
+                  <td class="text-right text-muted-foreground tabular-nums">{row.visitors}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <p class="mt-3 text-sm text-muted-foreground">No data yet</p>
+    )
+  }
+</section>

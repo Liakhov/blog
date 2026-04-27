@@ -1,0 +1,32 @@
+---
+import StatsList from './StatsList.astro';
+
+interface Item {
+  label: string;
+  value: number;
+}
+
+interface Props {
+  title: string;
+  period?: string; // e.g. "30 days", "all time", "today, raw"
+  items: Item[];
+  max: number;
+  emptyText?: string;
+}
+
+const { title, period, items, max, emptyText = 'No data yet' } = Astro.props;
+---
+
+<section class="mt-10">
+  <h2 class="text-base font-semibold">
+    {title}
+    {period && <span class="text-sm font-normal text-muted-foreground">{period}</span>}
+  </h2>
+  {
+    items.length > 0 ? (
+      <StatsList items={items} max={max} />
+    ) : (
+      <p class="mt-3 text-sm text-muted-foreground">{emptyText}</p>
+    )
+  }
+</section>

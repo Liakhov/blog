@@ -1,26 +1,25 @@
 ---
 import { env } from 'cloudflare:workers';
 import { SITE } from '@/consts';
-import { getDashboardData } from '@/lib/analytics/db';
+import { getDashboardData } from '@/lib/analytics/dashboard-stats';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import StatsList from '@/components/StatsList.astro';
+import StatCard from '@/components/stats/StatsCard.astro';
+import StatsSection from '@/components/stats/StatsSection.astro';
+import DailyTable from '@/components/stats/StatsDailyTable.astro';
 
-const db = env.DB;
-const data = await getDashboardData(db);
+const dashboardData = await getDashboardData(env.DB);
 
-const totalViews7d = data.last7Days.reduce((sum, r) => sum + r.views, 0);
-const totalVisitors7d = data.last7Days.reduce((sum, r) => sum + r.visitors, 0);
-const totalViews30d = data.last30Days.reduce((sum, r) => sum + r.views, 0);
-const totalVisitors30d = data.last30Days.reduce((sum, r) => sum + r.visitors, 0);
-const allTimeViews = data.topPages.reduce((s, r) => s + r.views, 0);
-const allTimeVisitors = data.topPages.reduce((s, r) => s + r.visitors, 0);
-
-const maxPageViews = data.topPages.length > 0 ? data.topPages[0].views : 1;
-const maxReferrerHits = data.topReferrers.length > 0 ? data.topReferrers[0].hits : 1;
-const maxBrowserHits = data.browsers.length > 0 ? data.browsers[0].hits : 1;
-const maxCountryHits = data.countries.length > 0 ? data.countries[0].hits : 1;
+const statsData = {
+  ...dashboardData,
+  maxLivePageViews: dashboardData.liveTodayPages[0]?.views ?? 1,
+  maxPages30dViews: dashboardData.topPages30d[0]?.views ?? 1,
+  maxPagesAllTimeViews: dashboardData.topPagesAllTime[0]?.views ?? 1,
+  maxReferrerHits: dashboardData.topReferrers30d[0]?.hits ?? 1,
+  maxBrowserHits: dashboardData.topBrowsers30d[0]?.hits ?? 1,
+  maxCountryHits: dashboardData.topCountries30d[0]?.hits ?? 1
+};
 ---
 
 <BaseLayout title={`Stats | ${SITE.title}`} description="Site analytics" noindex>
@@ -28,168 +27,85 @@ const maxCountryHits = data.countries.length > 0 ? data.countries[0].hits : 1;
   <main class="wrapper mt-4 mb-12">
     <h1 class="text-2xl font-semibold">Stats</h1>
     <p class="mt-1 text-sm text-muted-foreground">
-      Privacy-first, server-side tracking — no cookies, no client-side scripts.
+      Privacy-first, server-side tracking — no cookies, no client-side scripts. Rollup-backed
+      sections lag by ~2 days; the live section reads raw events.
     </p>
 
-    {/* Overview Cards */}
-    <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <div class="rounded-lg bg-surface p-4">
-        <p class="text-xs text-muted-foreground">Today</p>
-        <p class="mt-1 text-2xl font-semibold tabular-nums">{data.today?.views ?? 0}</p>
-        <p class="text-xs text-muted-foreground">{data.today?.visitors ?? 0} visitors</p>
-      </div>
-      <div class="rounded-lg bg-surface p-4">
-        <p class="text-xs text-muted-foreground">7 days</p>
-        <p class="mt-1 text-2xl font-semibold tabular-nums">{totalViews7d}</p>
-        <p class="text-xs text-muted-foreground">{totalVisitors7d} visitors</p>
-      </div>
-      <div class="rounded-lg bg-surface p-4">
-        <p class="text-xs text-muted-foreground">30 days</p>
-        <p class="mt-1 text-2xl font-semibold tabular-nums">{totalViews30d}</p>
-        <p class="text-xs text-muted-foreground">{totalVisitors30d} visitors</p>
-      </div>
-      <div class="rounded-lg bg-surface p-4">
-        <p class="text-xs text-muted-foreground">All time</p>
-        <p class="mt-1 text-2xl font-semibold tabular-nums">{allTimeViews}</p>
-        <p class="text-xs text-muted-foreground">{allTimeVisitors} visitors</p>
-      </div>
+    <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <StatCard
+        label="Live (today)"
+        views={statsData.liveTodayTotals.views}
+        visitors={statsData.liveTodayTotals.visitors}
+      />
+      <StatCard
+        label="Yesterday"
+        views={statsData.yesterday.views}
+        visitors={statsData.yesterday.visitors}
+      />
+      <StatCard
+        label="7 days"
+        views={statsData.total7Days.views}
+        visitors={statsData.total7Days.visitors}
+      />
+      <StatCard
+        label="30 days"
+        views={statsData.total30Days.views}
+        visitors={statsData.total30Days.visitors}
+      />
+      <StatCard
+        label="All time"
+        views={statsData.totalAllTime.views}
+        visitors={statsData.totalAllTime.visitors}
+        class="col-span-2 sm:col-span-3 lg:col-span-1"
+      />
     </div>
 
-    {/* Last 7 Days Table */}
-    <section class="mt-10">
-      <h2 class="text-base font-semibold">Last 7 Days</h2>
-      {
-        data.last7Days.length > 0 ? (
-          <div class="mt-3 overflow-x-auto rounded-lg border border-border">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-border bg-surface [&_th]:text-xs [&_th]:font-medium [&_th]:text-muted-foreground">
-                  <th class="px-4 py-2.5 text-left">Date</th>
-                  <th class="px-4 py-2.5 text-right">Views</th>
-                  <th class="px-4 py-2.5 text-right">Visitors</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-border">
-                {data.last7Days
-                  .slice()
-                  .reverse()
-                  .map(row => (
-                    <tr class="[&_td]:px-4 [&_td]:py-2.5">
-                      <td>{row.date}</td>
-                      <td class="text-right tabular-nums">{row.views}</td>
-                      <td class="text-right text-muted-foreground tabular-nums">{row.visitors}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p class="mt-3 text-sm text-muted-foreground">No data yet</p>
-        )
-      }
-    </section>
+    <StatsSection
+      title="Live"
+      period="today, raw"
+      items={statsData.liveTodayPages.map(r => ({ label: r.path, value: r.views }))}
+      max={statsData.maxLivePageViews}
+      emptyText="No traffic yet today"
+    />
 
-    {/* Last 30 Days Table */}
-    <section class="mt-10">
-      <h2 class="text-base font-semibold">Last 30 Days</h2>
-      {
-        data.last30Days.length > 0 ? (
-          <div class="mt-3 max-h-80 overflow-y-auto rounded-lg border border-border">
-            <table class="w-full text-sm">
-              <thead class="sticky top-0">
-                <tr class="border-b border-border bg-surface [&_th]:text-xs [&_th]:font-medium [&_th]:text-muted-foreground">
-                  <th class="px-4 py-2.5 text-left">Date</th>
-                  <th class="px-4 py-2.5 text-right">Views</th>
-                  <th class="px-4 py-2.5 text-right">Visitors</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-border">
-                {data.last30Days
-                  .slice()
-                  .reverse()
-                  .map(row => (
-                    <tr class="[&_td]:px-4 [&_td]:py-2.5">
-                      <td>{row.date}</td>
-                      <td class="text-right tabular-nums">{row.views}</td>
-                      <td class="text-right text-muted-foreground tabular-nums">{row.visitors}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p class="mt-3 text-sm text-muted-foreground">No data yet</p>
-        )
-      }
-    </section>
+    <DailyTable title="Last 7 Days" rows={statsData.last7Days} />
+    <DailyTable title="Last 30 Days" rows={statsData.last30Days} scrollable />
 
-    {/* Top Pages */}
-    <section class="mt-10">
-      <h2 class="text-base font-semibold">
-        Top Pages <span class="text-sm font-normal text-muted-foreground">all time</span>
-      </h2>
-      {
-        data.topPages.length > 0 ? (
-          <StatsList
-            items={data.topPages.map(r => ({ label: r.path, value: r.views }))}
-            max={maxPageViews}
-          />
-        ) : (
-          <p class="mt-3 text-sm text-muted-foreground">No data yet</p>
-        )
-      }
-    </section>
+    <div class="mt-10 grid gap-10 lg:grid-cols-2">
+      <StatsSection
+        title="Top Pages"
+        period="30 days"
+        items={statsData.topPages30d.map(r => ({ label: r.path, value: r.views }))}
+        max={statsData.maxPages30dViews}
+      />
+      <StatsSection
+        title="Top Pages"
+        period="all time"
+        items={statsData.topPagesAllTime.map(r => ({ label: r.path, value: r.views }))}
+        max={statsData.maxPagesAllTimeViews}
+      />
+    </div>
 
-    {/* Referrers */}
-    <section class="mt-10">
-      <h2 class="text-base font-semibold">
-        Referrers <span class="text-sm font-normal text-muted-foreground">30 days</span>
-      </h2>
-      {
-        data.topReferrers.length > 0 ? (
-          <StatsList
-            items={data.topReferrers.map(r => ({ label: r.referrer, value: r.hits }))}
-            max={maxReferrerHits}
-          />
-        ) : (
-          <p class="mt-3 text-sm text-muted-foreground">No data yet</p>
-        )
-      }
-    </section>
+    <StatsSection
+      title="Referrers"
+      period="30 days"
+      items={statsData.topReferrers30d.map(r => ({ label: r.referrer, value: r.hits }))}
+      max={statsData.maxReferrerHits}
+    />
 
-    {/* Browsers & Countries */}
     <div class="mt-10 grid gap-10 sm:grid-cols-2">
-      <section>
-        <h2 class="text-base font-semibold">
-          Browsers <span class="text-sm font-normal text-muted-foreground">30 days</span>
-        </h2>
-        {
-          data.browsers.length > 0 ? (
-            <StatsList
-              items={data.browsers.map(r => ({ label: r.browser, value: r.hits }))}
-              max={maxBrowserHits}
-            />
-          ) : (
-            <p class="mt-3 text-sm text-muted-foreground">No data yet</p>
-          )
-        }
-      </section>
-
-      <section>
-        <h2 class="text-base font-semibold">
-          Countries <span class="text-sm font-normal text-muted-foreground">30 days</span>
-        </h2>
-        {
-          data.countries.length > 0 ? (
-            <StatsList
-              items={data.countries.map(r => ({ label: r.country, value: r.hits }))}
-              max={maxCountryHits}
-            />
-          ) : (
-            <p class="mt-3 text-sm text-muted-foreground">No data yet</p>
-          )
-        }
-      </section>
+      <StatsSection
+        title="Browsers"
+        period="30 days"
+        items={statsData.topBrowsers30d.map(r => ({ label: r.browser, value: r.hits }))}
+        max={statsData.maxBrowserHits}
+      />
+      <StatsSection
+        title="Countries"
+        period="30 days"
+        items={statsData.topCountries30d.map(r => ({ label: r.country, value: r.hits }))}
+        max={statsData.maxCountryHits}
+      />
     </div>
   </main>
   <Footer />

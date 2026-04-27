@@ -1,0 +1,28 @@
+---
+interface Props {
+  label: string;
+  views: number | null;
+  visitors: number | null;
+  emptyHint?: string; // shown when views/visitors are null
+  class?: string; // extra classes (used to span more cols on mobile)
+}
+const { label, views, visitors, emptyHint = 'processing', class: className = '' } = Astro.props;
+const isEmpty = views === null || visitors === null;
+---
+
+<div class:list={['rounded-lg bg-surface p-4', className]}>
+  <p class="text-xs text-muted-foreground">{label}</p>
+  {
+    isEmpty ? (
+      <>
+        <p class="mt-1 text-2xl font-semibold text-muted-foreground tabular-nums">—</p>
+        <p class="text-xs text-muted-foreground">{emptyHint}</p>
+      </>
+    ) : (
+      <>
+        <p class="mt-1 text-2xl font-semibold tabular-nums">{views}</p>
+        <p class="text-xs text-muted-foreground">{visitors} visitors</p>
+      </>
+    )
+  }
+</div>

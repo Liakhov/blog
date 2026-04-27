@@ -1,4 +1,4 @@
-import type { PageviewEvent } from '@/lib/types.ts';
+import type { PageviewEvent } from '@/lib/types';
 
 export async function insertPageview(db: D1Database, event: PageviewEvent): Promise<void> {
   await db
