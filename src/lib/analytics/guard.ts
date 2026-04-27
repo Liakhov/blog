@@ -12,7 +12,21 @@ const RECON_EXTENSIONS = [
   '.log',
   '.htaccess',
   '.ini',
-  '.config'
+  '.config',
+  '.env',
+  '.gz',
+  '.zip',
+  '.tar',
+  '.tgz',
+  '.7z',
+  '.rar',
+  '.swp',
+  '.save',
+  '.dist',
+  '.sample',
+  '.example',
+  '.htpasswd',
+  '.npmrc'
 ];
 
 const RECON_PATHS = [
@@ -25,7 +39,31 @@ const RECON_PATHS = [
   '/.svn',
   '/.aws',
   '/setup',
-  '/install'
+  '/install',
+  '/security.txt',
+  '/.well-known/security.txt',
+  '/debug',
+  '/debugbar',
+  '/aws-credentials',
+  '/.s3cfg',
+  '/phpinfo',
+  '/info.php',
+  '/cgi-bin',
+  '/xmlrpc',
+  '/server-status',
+  '/server-info',
+  '/actuator',
+  '/console',
+  '/jolokia',
+  '/laravel',
+  '/symfony',
+  '/drupal',
+  '/joomla',
+  '/magento',
+  '/shopify',
+  '/api/v1/.env',
+  '/backend',
+  '/vendor'
 ];
 
 export const guard = defineMiddleware((context, next) => {
