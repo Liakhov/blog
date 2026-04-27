@@ -3,7 +3,7 @@ import { env } from 'cloudflare:workers';
 import { isbot } from 'isbot';
 import { visitorHash } from './hash';
 import { parseUA } from './ua';
-import { insertPageview } from './db';
+import { insertPageview } from './events';
 
 const SKIP_EXTENSIONS = /\.(css|js|ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|map|xml|json)$/;
 const SKIP_PREFIXES = ['/stats', '/_', '/api/'];
