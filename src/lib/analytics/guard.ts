@@ -40,8 +40,6 @@ const RECON_PATHS = [
   '/.aws',
   '/setup',
   '/install',
-  '/security.txt',
-  '/.well-known/security.txt',
   '/debug',
   '/debugbar',
   '/aws-credentials',
