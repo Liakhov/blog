@@ -4,17 +4,15 @@ import { isbot } from 'isbot';
 import { visitorHash } from './hash';
 import { parseUA } from './ua';
 import { insertPageview } from './events';
+import { shouldTrackResponse } from './should-track';
 
-const SKIP_EXTENSIONS = /\.(css|js|ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|map|xml|json)$/;
 const SKIP_PREFIXES = ['/stats', '/_', '/api/'];
 
 async function trackPageview(request: Request, db: D1Database, salt: string): Promise<void> {
   const url = new URL(request.url);
   const path = (url.pathname.replace(/\/+$/, '') || '/').toLowerCase();
 
-  if (SKIP_EXTENSIONS.test(path) || SKIP_PREFIXES.some(p => path.startsWith(p))) {
-    return;
-  }
+  if (SKIP_PREFIXES.some(p => path.startsWith(p))) return;
 
   const purpose = request.headers.get('purpose') ?? request.headers.get('sec-purpose');
   if (purpose === 'prefetch') return;
@@ -54,16 +52,19 @@ async function trackPageview(request: Request, db: D1Database, salt: string): Pr
   });
 }
 
-export const track = defineMiddleware((context, next) => {
-  const cfContext = context.locals.cfContext;
+export const track = defineMiddleware(async (context, next) => {
+  const response = await next();
 
-  if (!cfContext) return next();
+  const cfContext = context.locals.cfContext;
+  if (!cfContext) return response;
+
+  if (!shouldTrackResponse(response)) return response;
 
   const db = env.DB;
   const salt = env.ANALYTICS_SALT;
   if (!salt) {
     console.warn('[analytics] ANALYTICS_SALT is not set — tracking disabled');
-    return next();
+    return response;
   }
 
   cfContext.waitUntil(
@@ -71,5 +72,5 @@ export const track = defineMiddleware((context, next) => {
       console.error('[analytics]', err);
     })
   );
-  return next();
+  return response;
 });

@@ -11,7 +11,7 @@ Request
   ↓
 guard middleware    → 404 on reconnaissance paths
   ↓
-track middleware    → ctx.waitUntil(trackPageview(...))
+track middleware    → await next() → 200 HTML? → ctx.waitUntil(trackPageview(...))
   ↓
 response returned   → user is not blocked by the DB write
 
@@ -92,18 +92,21 @@ Astro's router or the analytics code:
 
 ### `track` middleware
 
-Pulls `ExecutionContext` from `context.locals.cfContext` and schedules
-the insert via `ctx.waitUntil(...)` — the response is not blocked by
-the DB write. Inside `trackPageview` (`src/lib/analytics/track.ts`) the
-request is dropped early (no DB write) if any of the following hold:
+Awaits `next()` first, then schedules the insert via
+`ctx.waitUntil(...)` — the response is not blocked by the DB write.
+The request is dropped (no DB write) if any of the following hold:
 
-- Path matches a static-asset extension (`.css`, `.js`, `.png`, …)
-- Path starts with `/stats`, `/_`, or `/api/`
-- Header `purpose: prefetch` or `sec-purpose: prefetch` present
-- User-Agent is empty or matches the `isbot` library
+- Response status ≠ 200, or response `content-type` is not `text/html`
+  (`shouldTrackResponse` in `src/lib/analytics/should-track.ts`). This
+  is the primary filter: it rejects 404s (bot probes for non-existent
+  paths), redirects, and non-HTML routes (`robots.txt`, RSS, sitemap,
+  JSON, static assets) without any path allowlist.
+- Path starts with `/stats`, `/_`, or `/api/` (own admin/internal HTML).
+- Header `purpose: prefetch` or `sec-purpose: prefetch` present.
+- User-Agent is empty or matches the `isbot` library.
 
-Otherwise it computes the visitor ID, parses the UA, normalises the
-referrer, and `INSERT`s into `pageview_events`.
+Otherwise `trackPageview` computes the visitor ID, parses the UA,
+normalises the referrer, and `INSERT`s into `pageview_events`.
 
 ### Visitor ID
 
@@ -205,7 +208,7 @@ FROM stats_monthly GROUP BY path;
 
 `/stats` (`src/pages/stats.astro`) calls `getStatsPageData(db)` from
 `src/lib/analytics/stats-page.ts`, which delegates to
-`getDashboardData(db)` in `src/lib/analytics/db.ts` and runs one
+`getDashboardData(db)` in `src/lib/analytics/dashboard-stats.ts` and runs one
 `db.batch` of 13 queries.
 
 | Section                    | Source                                  | Bot handling             |
@@ -302,6 +305,26 @@ wrangler d1 execute <DB> --remote --command \
 # Watch the cron fire
 wrangler tail
 ```
+
+### One-time cleanup of bot junk paths
+
+The `200 HTML only` filter rejects bot probes going forward. Any junk
+paths recorded before the filter existed (e.g. `/backend/.env`, `/env`,
+`/security.txt`, `/sitemap.xml.gz`) are still in `pageview_events`
+until cron drains them — and low-volume probes (≤ `BOT_THRESHOLD_PER_DAY`
+hits/day) flow into the rollups instead of being filtered out.
+
+Drain them once with:
+
+```bash
+wrangler d1 execute blog --remote --command "
+DELETE FROM pageview_events
+WHERE path NOT IN ('/', '/about', '/posts')
+  AND path NOT LIKE '/posts/%';
+"
+```
+
+Update the path list above when you add a new top-level page.
 
 ### Manual cron run
 
