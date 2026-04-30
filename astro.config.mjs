@@ -12,7 +12,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: page => !page.endsWith('/stats')
+      filter: page => !page.endsWith('/stats/')
     })
   ],
   vite: {
