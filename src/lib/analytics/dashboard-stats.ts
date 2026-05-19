@@ -1,4 +1,4 @@
-import { BOT_THRESHOLD_PER_DAY } from '@/consts';
+import { BOT_BURST_HITS, BOT_BURST_WINDOW_SECONDS, BOT_THRESHOLD_PER_DAY } from '@/consts';
 import type {
   Totals,
   PathRow,
@@ -133,9 +133,15 @@ const TOTAL_ALL_TIME_SQL = `
  */
 export async function getDashboardData(db: D1Database): Promise<DashboardData> {
   const results = await db.batch([
-    db.prepare(LIVE_TODAY_TOTALS_SQL).bind(BOT_THRESHOLD_PER_DAY),
-    db.prepare(LIVE_TODAY_PAGES_SQL).bind(BOT_THRESHOLD_PER_DAY),
-    db.prepare(YESTERDAY_TOTALS_SQL).bind(BOT_THRESHOLD_PER_DAY),
+    db
+      .prepare(LIVE_TODAY_TOTALS_SQL)
+      .bind(BOT_THRESHOLD_PER_DAY, BOT_BURST_WINDOW_SECONDS, BOT_BURST_HITS),
+    db
+      .prepare(LIVE_TODAY_PAGES_SQL)
+      .bind(BOT_THRESHOLD_PER_DAY, BOT_BURST_WINDOW_SECONDS, BOT_BURST_HITS),
+    db
+      .prepare(YESTERDAY_TOTALS_SQL)
+      .bind(BOT_THRESHOLD_PER_DAY, BOT_BURST_WINDOW_SECONDS, BOT_BURST_HITS),
     db.prepare(LAST_N_DAYS_SQL(7)),
     db.prepare(LAST_N_DAYS_SQL(30)),
     db.prepare(TOP_PAGES_ALL_TIME_SQL),

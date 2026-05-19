@@ -1,5 +1,11 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import { BOT_THRESHOLD_PER_DAY, MAX_DAYS_PER_RUN, RAW_EVENT_RETENTION_DAYS } from '@/consts';
+import {
+  BOT_BURST_HITS,
+  BOT_BURST_WINDOW_SECONDS,
+  BOT_THRESHOLD_PER_DAY,
+  MAX_DAYS_PER_RUN,
+  RAW_EVENT_RETENTION_DAYS
+} from '@/consts';
 import { botFilterCte } from './bot-filter';
 
 /**
@@ -116,7 +122,15 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
           AND visitor_id NOT IN (SELECT visitor_id FROM bots)
         GROUP BY date(created_at), path`
       )
-      .bind(date, BOT_THRESHOLD_PER_DAY, date),
+      .bind(
+        date,
+        BOT_THRESHOLD_PER_DAY,
+        date,
+        BOT_BURST_WINDOW_SECONDS,
+        date,
+        BOT_BURST_HITS,
+        date
+      ),
 
     // stats_daily_totals — per date (correct distinct count across all paths)
     db
@@ -131,7 +145,15 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
           AND visitor_id NOT IN (SELECT visitor_id FROM bots)
         GROUP BY date(created_at)`
       )
-      .bind(date, BOT_THRESHOLD_PER_DAY, date),
+      .bind(
+        date,
+        BOT_THRESHOLD_PER_DAY,
+        date,
+        BOT_BURST_WINDOW_SECONDS,
+        date,
+        BOT_BURST_HITS,
+        date
+      ),
 
     // stats_daily_referrers (NULL referrer excluded)
     db
@@ -145,7 +167,15 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
           AND visitor_id NOT IN (SELECT visitor_id FROM bots)
         GROUP BY date(created_at), referrer`
       )
-      .bind(date, BOT_THRESHOLD_PER_DAY, date),
+      .bind(
+        date,
+        BOT_THRESHOLD_PER_DAY,
+        date,
+        BOT_BURST_WINDOW_SECONDS,
+        date,
+        BOT_BURST_HITS,
+        date
+      ),
 
     // stats_daily_browsers (NULL browser excluded)
     db
@@ -159,7 +189,15 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
           AND visitor_id NOT IN (SELECT visitor_id FROM bots)
         GROUP BY date(created_at), browser`
       )
-      .bind(date, BOT_THRESHOLD_PER_DAY, date),
+      .bind(
+        date,
+        BOT_THRESHOLD_PER_DAY,
+        date,
+        BOT_BURST_WINDOW_SECONDS,
+        date,
+        BOT_BURST_HITS,
+        date
+      ),
 
     // stats_daily_countries (NULL country excluded)
     db
@@ -173,7 +211,15 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
           AND visitor_id NOT IN (SELECT visitor_id FROM bots)
         GROUP BY date(created_at), country`
       )
-      .bind(date, BOT_THRESHOLD_PER_DAY, date),
+      .bind(
+        date,
+        BOT_THRESHOLD_PER_DAY,
+        date,
+        BOT_BURST_WINDOW_SECONDS,
+        date,
+        BOT_BURST_HITS,
+        date
+      ),
 
     // stats_monthly — wipe and recompute the affected month from stats_daily.
     // DELETE first so paths that disappeared from the new aggregation
