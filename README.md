@@ -14,48 +14,57 @@ Astro 6 blog deployed to Cloudflare Workers.
 
 ## Analytics
 
-Privacy-first pageview tracking — no cookies, no client-side JS, no third-party scripts.
+Privacy-first pageview tracking — no cookies, no localStorage, no third-party scripts.
 
-- Tracking runs in middleware via `waitUntil()` (non-blocking)
-- Visitor identity: daily-rotating SHA-256 hash of anonymized IP + User-Agent + salt
-- Bot filtering: `isbot` library on ingestion + behavioral detection during rollup
-- Data stored in Cloudflare D1 (`migrations/0001_analytics.sql`)
+- Browser fires `navigator.sendBeacon` to `/api/event` on every page load
+- `/api/event` is the single writer to `pageview_events` — derives path,
+  IP, country, UA server-side; rejects empty/`isbot` UAs and cross-origin
+  POSTs (Astro CSRF + same-origin Referer check)
+- Visitor identity: daily-rotating SHA-256 hash of anonymized IP + UA + salt
+- Three layers of bot filtering: beacon (no JS → not counted),
+  endpoint header checks, and a CTE that flags high-volume and
+  same-path-burst visitors during nightly rollup
+- Data stored in Cloudflare D1 (`migrations/`); see `docs/analytics.md`
 
 ## Project Structure
 
 ```
 src/
-├── assets/icons/         # SVG icons (arrow-left, calendar, moon, sun)
-├── components/           # Card, Header, Footer, FormattedDate, StatsList
-├── content/posts/        # Blog posts (.md/.mdx)
+├── components/
+│   ├── Card, Header, Footer, FormattedDate
+│   └── stats/                  # StatsCard, StatsDailyTable, StatsList, StatsSection
+├── content/posts/              # Blog posts (.md/.mdx)
 ├── layouts/
-│   ├── BaseLayout.astro  # HTML shell (head, meta, fonts, OG tags)
-│   ├── HomeLayout.astro  # Homepage with optional recent-posts slot
-│   ├── PageLayout.astro  # Static pages (about, etc.) via Markdown layout
-│   ├── PostLayout.astro  # Single blog post
-│   └── PostsLayout.astro # Post listing page
+│   ├── BaseLayout.astro        # HTML shell + inline beacon script
+│   ├── HomeLayout.astro
+│   ├── PageLayout.astro
+│   ├── PostLayout.astro
+│   └── PostsLayout.astro
 ├── lib/
-│   ├── analytics/        # Privacy-first pageview tracking (no cookies, no client JS)
-│   │   ├── cron.ts       # Daily rollup cron job
-│   │   ├── db.ts         # D1 query helpers
-│   │   ├── hash.ts       # Daily-rotating SHA-256 visitor hash
-│   │   ├── ip.ts         # IP anonymization
-│   │   ├── track.ts      # Tracking orchestrator (called from middleware)
-│   │   └── ua.ts         # User-Agent parsing
-│   └── types.ts          # Shared type definitions
+│   ├── analytics/              # Privacy-first pageview tracking
+│   │   ├── bot-filter.ts       # Shared bot-filter CTE
+│   │   ├── cron.ts             # Daily rollup aggregation
+│   │   ├── dashboard-stats.ts  # /stats batch read
+│   │   ├── events.ts           # insertPageview helper
+│   │   ├── hash.ts             # Daily-rotating SHA-256 visitor hash
+│   │   ├── ip.ts               # IP anonymization
+│   │   └── ua.ts               # User-Agent parsing (browser name only)
+│   └── types.ts
 ├── pages/
-│   ├── index.astro       # Homepage
-│   ├── about.md          # About page (uses PageLayout)
-│   ├── 404.astro         # Not found
-│   ├── api/cron.ts       # Cron API endpoint
-│   └── posts/            # /posts listing + /posts/:slug detail
-├── scripts/
-│   └── theme-handler.ts  # Dark/light theme toggle logic
-├── styles/global.css     # Tailwind config, color tokens, base styles
-├── consts.ts             # Site-wide constants (title, socials)
-├── content.config.ts     # Content collection schema
-├── env.d.ts              # TypeScript environment declarations
-└── middleware.ts          # Analytics tracking via waitUntil()
+│   ├── index.astro
+│   ├── about.md
+│   ├── 404.astro
+│   ├── stats.astro             # Analytics dashboard
+│   ├── posts/
+│   ├── api/event.ts            # POST /api/event — beacon ingest
+│   ├── robots.txt.ts
+│   └── rss.xml.js
+├── scripts/theme-handler.ts
+├── styles/global.css
+├── consts.ts
+├── content.config.ts
+├── env.d.ts
+└── worker.ts                   # Worker entry; scheduled() handler
 ```
 
 ## Getting Started
@@ -75,7 +84,6 @@ First time — create a D1 database, apply migrations, and set secrets:
 npx wrangler d1 create blog
 npx wrangler d1 migrations apply blog --remote
 npx wrangler secret put ANALYTICS_SALT
-npx wrangler secret put CRON_SECRET
 ```
 
 Build and deploy (or use CI):

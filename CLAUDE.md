@@ -7,7 +7,7 @@ Astro 6 blog deployed to Cloudflare Workers. Currently in early stage with place
 - **Astro 6** (hybrid: SSR default, static pages opt in with `export const prerender = true`)
 - **Tailwind CSS v4** via Vite plugin — semantic color tokens defined in `src/styles/global.css`
 - **Cloudflare Workers** — adapter: `@astrojs/cloudflare`, config: `wrangler.json`
-- **Cloudflare D1** — SQLite database for analytics, schema in `migrations/0001_analytics.sql`
+- **Cloudflare D1** — SQLite database for analytics, schema in `migrations/`
 - **Content Collections** — Markdown/MDX in `src/content/posts/`, schema in `src/content.config.ts`
 - **Fonts** — Inter (UI), Lora (prose body) via Astro's built-in `fonts` config
 - **pnpm** package manager, Node >= 22.12
@@ -16,32 +16,41 @@ Astro 6 blog deployed to Cloudflare Workers. Currently in early stage with place
 
 ```
 src/
-├── components/           # Card, Header, Footer, FormattedDate
-├── content/posts/        # Blog posts (.md/.mdx)
+├── components/
+│   ├── Card, Header, Footer, FormattedDate
+│   └── stats/                  # StatsCard, StatsDailyTable, StatsList, StatsSection
+├── content/posts/              # Blog posts (.md/.mdx)
 ├── layouts/
-│   ├── BaseLayout.astro  # HTML shell (head, meta, fonts, OG tags)
-│   ├── HomeLayout.astro  # Homepage with optional recent-posts slot
-│   ├── PageLayout.astro  # Static pages (about, etc.) via Markdown layout
-│   ├── PostLayout.astro  # Single blog post
-│   └── PostsLayout.astro # Post listing page
-├── pages/
-│   ├── index.astro       # Homepage
-│   ├── about.md          # About page (uses PageLayout)
-│   ├── 404.astro         # Not found
-│   ├── posts/            # /posts listing + /posts/:slug detail
-│   ├── robots.txt.ts     # API route
-│   └── rss.xml.js        # RSS feed
-├── styles/global.css     # Tailwind config, color tokens, base styles
+│   ├── BaseLayout.astro        # HTML shell (head, meta, fonts, OG tags, beacon)
+│   ├── HomeLayout.astro        # Homepage with optional recent-posts slot
+│   ├── PageLayout.astro        # Static pages (about, etc.) via Markdown layout
+│   ├── PostLayout.astro        # Single blog post
+│   └── PostsLayout.astro       # Post listing page
 ├── lib/
-│   └── analytics/        # Privacy-first pageview tracking (no cookies, no client JS)
-│       ├── track.ts      # Tracking orchestrator (called from middleware)
-│       ├── db.ts         # D1 query helpers
-│       ├── hash.ts       # Daily-rotating SHA-256 visitor hash
-│       ├── ip.ts         # IP anonymization
-│       └── ua.ts         # User-Agent parsing
-├── consts.ts             # Site-wide constants (title, socials)
-├── content.config.ts     # Content collection schema
-└── middleware.ts          # Analytics tracking via waitUntil()
+│   ├── analytics/              # Privacy-first pageview tracking (no cookies, beacon-based)
+│   │   ├── bot-filter.ts       # Shared bot-filter CTE (high-volume + same-path burst)
+│   │   ├── cron.ts             # Daily rollup logic — aggregates and deletes raw events
+│   │   ├── dashboard-stats.ts  # 11-query batch read for /stats
+│   │   ├── events.ts           # insertPageview helper
+│   │   ├── hash.ts             # Daily-rotating SHA-256 visitor hash
+│   │   ├── ip.ts               # IP anonymization (/24 IPv4, /64 IPv6)
+│   │   └── ua.ts               # User-Agent parsing (browser only)
+│   └── types.ts                # Shared TS types
+├── pages/
+│   ├── index.astro             # Homepage
+│   ├── about.md                # About page (uses PageLayout)
+│   ├── 404.astro
+│   ├── stats.astro             # Analytics dashboard
+│   ├── posts/                  # /posts listing + /posts/:slug detail
+│   ├── api/event.ts            # POST /api/event — single writer to pageview_events
+│   ├── robots.txt.ts
+│   └── rss.xml.js
+├── scripts/theme-handler.ts
+├── styles/global.css           # Tailwind config, color tokens, base styles
+├── consts.ts                   # Site-wide constants + analytics tuning
+├── content.config.ts           # Content collection schema
+├── env.d.ts
+└── worker.ts                   # Cloudflare Worker entry — scheduled() → handleCron
 ```
 
 ## Commands
