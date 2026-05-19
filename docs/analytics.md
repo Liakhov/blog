@@ -11,9 +11,12 @@ Request
   ↓
 guard middleware    → 404 on reconnaissance paths
   ↓
-track middleware    → await next() → 200 HTML? → ctx.waitUntil(trackPageview(...))
+response returned   → no DB write on the page request itself
+
+[ Browser, after page loads ]
+inline script in BaseLayout → navigator.sendBeacon('/api/event', { r: document.referrer })
   ↓
-response returned   → user is not blocked by the DB write
+POST /api/event     → validates UA + same-origin Referer → INSERT into pageview_events
 
 [ Cloudflare Cron Trigger — daily at 00:30 UTC ]
 scheduled() → handleCron(db)
@@ -27,10 +30,17 @@ getStatsPageData(db) → 13-query batch → render
 
 ## Design
 
+- Three layers of bot filtering with different cost and strictness:
+  the **browser beacon** drops anything that does not execute JS, the
+  **`/api/event` endpoint** applies cheap header checks (UA, same-origin
+  Referer), and the **cron CTE** catches behavioural anomalies on read.
 - Raw events fold into rollups; raw rows are deleted in the same batch
   that aggregates their date.
-- Bots (visitors with > `BOT_THRESHOLD_PER_DAY` events on one day) are
-  filtered out at aggregation via a CTE — never at write time.
+- Behavioural bot filtering happens at aggregation via a CTE — never at
+  write time.
+  A visitor is considered bot-like if it exceeds `BOT_THRESHOLD_PER_DAY`
+  events in one UTC day, or if it creates a short same-path burst
+  (`BOT_BURST_HITS` hits within `BOT_BURST_WINDOW_SECONDS`).
 - The dashboard reads precomputed data, except "Live (today)" and
   "Yesterday", which read raw events directly.
 - Idempotent, atomic per date, self-recovering after outages.
@@ -90,23 +100,30 @@ Astro's router or the analytics code:
 - Path prefixes: `/wp-`, `/wordpress`, `/admin`, `/phpmyadmin`,
   `/.env`, `/.git`, `/.svn`, `/.aws`, `/setup`, `/install`
 
-### `track` middleware
+### Browser beacon
 
-Awaits `next()` first, then schedules the insert via
-`ctx.waitUntil(...)` — the response is not blocked by the DB write.
-The request is dropped (no DB write) if any of the following hold:
+An inline script in `BaseLayout.astro` calls `navigator.sendBeacon(
+'/api/event', ...)` on every `astro:page-load` event. The body is the
+minimum needed — `{ r: document.referrer || null }`. Everything else
+(path, IP, country, UA) is derived server-side from request headers and
+never trusted from the browser.
 
-- Response status ≠ 200, or response `content-type` is not `text/html`
-  (`shouldTrackResponse` in `src/lib/analytics/should-track.ts`). This
-  is the primary filter: it rejects 404s (bot probes for non-existent
-  paths), redirects, and non-HTML routes (`robots.txt`, RSS, sitemap,
-  JSON, static assets) without any path allowlist.
-- Path starts with `/stats`, `/_`, or `/api/` (own admin/internal HTML).
-- Header `purpose: prefetch` or `sec-purpose: prefetch` present.
+Bots that do not execute JavaScript drop out here. Bots that do still
+have to pass the endpoint filters and the cron CTE.
+
+### `/api/event` endpoint
+
+`src/pages/api/event.ts`. The single writer to `pageview_events`. Rejects
+the request (HTTP 204, silently dropped) if any of:
+
 - User-Agent is empty or matches the `isbot` library.
+- `Referer` header is missing or not same-origin.
+- Path derived from the `Referer` starts with `/stats`, `/_`, or `/api/`.
+- Body is larger than `MAX_BODY_BYTES = 512` or fails to parse.
+- `ANALYTICS_SALT` is not configured.
 
-Otherwise `trackPageview` computes the visitor ID, parses the UA,
-normalises the referrer, and `INSERT`s into `pageview_events`.
+Otherwise the endpoint computes the visitor ID, parses the UA, normalises
+the referrer hostname, and `INSERT`s a single row.
 
 ### Visitor ID
 
@@ -164,19 +181,38 @@ distinct count.
 Each rollup query carries its own bot-filtering CTE:
 
 ```sql
-WITH bots AS (
+WITH high_volume_bots AS (
   SELECT visitor_id FROM pageview_events
   WHERE date(created_at) = ?
   GROUP BY visitor_id
   HAVING COUNT(*) > 50
+),
+burst_bots AS (
+  SELECT e1.visitor_id
+  FROM pageview_events e1
+  JOIN pageview_events e2
+    ON e2.visitor_id = e1.visitor_id
+   AND e2.path = e1.path
+   AND date(e2.created_at) = ?
+   AND julianday(e2.created_at) >= julianday(e1.created_at)
+   AND (julianday(e2.created_at) - julianday(e1.created_at)) * 86400.0 <= 2
+  WHERE date(e1.created_at) = ?
+  GROUP BY e1.visitor_id, e1.path, e1.created_at
+  HAVING COUNT(*) >= 3
+),
+bots AS (
+  SELECT visitor_id FROM high_volume_bots
+  UNION
+  SELECT visitor_id FROM burst_bots
 )
 INSERT OR REPLACE INTO stats_daily ...
 WHERE date(created_at) = ?
   AND visitor_id NOT IN (SELECT visitor_id FROM bots)
 ```
 
-The threshold (`BOT_THRESHOLD_PER_DAY = 50`) is shared with the
-dashboard Live and Yesterday queries.
+The thresholds (`BOT_THRESHOLD_PER_DAY = 50`, `BOT_BURST_HITS = 3`,
+`BOT_BURST_WINDOW_SECONDS = 2`) are shared with the dashboard Live and
+Yesterday queries.
 
 ### 3. Refresh `stats_all_time`
 
@@ -278,6 +314,8 @@ Defined in `src/consts.ts`.
 | Name                       | Value | Used in                                    |
 | -------------------------- | ----- | ------------------------------------------ |
 | `BOT_THRESHOLD_PER_DAY`    | 50    | cron CTEs, dashboard Live + Yesterday CTEs |
+| `BOT_BURST_HITS`           | 3     | cron CTEs, dashboard Live + Yesterday CTEs |
+| `BOT_BURST_WINDOW_SECONDS` | 2     | cron CTEs, dashboard Live + Yesterday CTEs |
 | `MAX_DAYS_PER_RUN`         | 10    | cron find-dates LIMIT                      |
 | `RAW_EVENT_RETENTION_DAYS` | 2     | buffer in find-dates                       |
 
@@ -312,7 +350,7 @@ The `200 HTML only` filter rejects bot probes going forward. Any junk
 paths recorded before the filter existed (e.g. `/backend/.env`, `/env`,
 `/security.txt`, `/sitemap.xml.gz`) are still in `pageview_events`
 until cron drains them — and low-volume probes (≤ `BOT_THRESHOLD_PER_DAY`
-hits/day) flow into the rollups instead of being filtered out.
+hits/day) are filtered only if they create a same-path burst.
 
 Drain them once with:
 
@@ -338,6 +376,9 @@ dates).
 Constants can be adjusted in `src/consts.ts`:
 
 - Lower `BOT_THRESHOLD_PER_DAY` if real bots slip through.
+- Lower `BOT_BURST_HITS` / raise `BOT_BURST_WINDOW_SECONDS` if short
+  automated bursts still slip through. Raising hits or lowering the
+  window makes the filter more conservative.
 - Raise `MAX_DAYS_PER_RUN` if you upgrade to Workers Paid (1000
   subrequests instead of 50) — faster recovery from long outages.
 - Raise `RAW_EVENT_RETENTION_DAYS` for a wider debugging window at the

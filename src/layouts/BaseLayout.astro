@@ -146,5 +146,22 @@ if (modDatetime) {
     <slot />
 
     <script src="../scripts/theme-handler.ts"></script>
+
+    <script is:inline>
+      (function () {
+        function sendBeacon() {
+          if (document.prerendering) return;
+          if (location.pathname.startsWith('/stats')) return;
+          try {
+            const body = JSON.stringify({ r: document.referrer || null });
+            const blob = new Blob([body], { type: 'application/json' });
+            navigator.sendBeacon('/api/event', blob);
+          } catch {
+            /* ignore */
+          }
+        }
+        document.addEventListener('astro:page-load', sendBeacon);
+      })();
+    </script>
   </body>
 </html>
