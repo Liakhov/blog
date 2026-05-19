@@ -67,7 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
   const referrer = cleanReferrer(payload.r, url.hostname);
 
   const vid = await visitorHash(ip, ua, salt);
-  const { browser, os, device } = parseUA(ua);
+  const { browser } = parseUA(ua);
 
   await insertPageview(env.DB, {
     visitorId: vid,
@@ -75,8 +75,6 @@ export const POST: APIRoute = async ({ request }) => {
     referrer,
     country,
     browser,
-    os,
-    device,
     createdAt: new Date().toISOString()
   });
 

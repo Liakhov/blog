@@ -50,24 +50,23 @@ getStatsPageData(db) → 13-query batch → render
 
 ## Schema
 
-Single migration: `migrations/0001_analytics.sql`.
+Migrations: `migrations/0001_analytics.sql` (schema),
+`migrations/0002_drop_os_device.sql` (drops unused columns).
 
 ### `pageview_events` — raw events
 
 One row per tracked request. Deleted in the same batch that aggregates
 its date.
 
-| Column       | Type         | Notes                             |
-| ------------ | ------------ | --------------------------------- |
-| `id`         | INTEGER      | autoincrement PK                  |
-| `visitor_id` | TEXT         | 16-hex truncated SHA-256          |
-| `path`       | TEXT         | normalised lowercase path         |
-| `referrer`   | TEXT \| NULL | external hostname only            |
-| `country`    | TEXT \| NULL | from `cf-ipcountry` header        |
-| `browser`    | TEXT \| NULL | from `ua-parser-js`               |
-| `os`         | TEXT \| NULL | from `ua-parser-js`               |
-| `device`     | TEXT         | `desktop` \| `mobile` \| `tablet` |
-| `created_at` | TEXT         | UTC ISO timestamp (set in code)   |
+| Column       | Type         | Notes                           |
+| ------------ | ------------ | ------------------------------- |
+| `id`         | INTEGER      | autoincrement PK                |
+| `visitor_id` | TEXT         | 16-hex truncated SHA-256        |
+| `path`       | TEXT         | normalised lowercase path       |
+| `referrer`   | TEXT \| NULL | external hostname only          |
+| `country`    | TEXT \| NULL | from `cf-ipcountry` header      |
+| `browser`    | TEXT \| NULL | from `ua-parser-js`             |
+| `created_at` | TEXT         | UTC ISO timestamp (set in code) |
 
 Indexes: `(created_at)`, `(visitor_id, created_at)`, `(path, created_at)`.
 

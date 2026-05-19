@@ -4,8 +4,6 @@ export interface PageviewEvent {
   referrer: string | null;
   country: string | null;
   browser: string | null;
-  os: string | null;
-  device: 'desktop' | 'mobile' | 'tablet';
   createdAt: string;
 }
 

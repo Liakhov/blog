@@ -4,8 +4,8 @@ export async function insertPageview(db: D1Database, event: PageviewEvent): Prom
   await db
     .prepare(
       `INSERT INTO pageview_events
-         (visitor_id, path, referrer, country, browser, os, device, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+         (visitor_id, path, referrer, country, browser, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
     )
     .bind(
       event.visitorId,
@@ -13,8 +13,6 @@ export async function insertPageview(db: D1Database, event: PageviewEvent): Prom
       event.referrer,
       event.country,
       event.browser,
-      event.os,
-      event.device,
       event.createdAt
     )
     .run();
