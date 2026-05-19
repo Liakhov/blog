@@ -108,10 +108,38 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
   // statements don't share scope.
   const botCte = botFilterCte('?');
 
+  // Each rollup binds: date (CTE), threshold, date (CTE), window, date (CTE),
+  // hits, date (outer WHERE). Identical for every per-date statement below.
+  const bindDate = (stmt: D1PreparedStatement) =>
+    stmt.bind(
+      date,
+      BOT_THRESHOLD_PER_DAY,
+      date,
+      BOT_BURST_WINDOW_SECONDS,
+      date,
+      BOT_BURST_HITS,
+      date
+    );
+
+  // hits-style breakdown: GROUP BY a single field, COUNT(*) → table(date, field, hits).
+  const breakdown = (table: string, field: string) =>
+    bindDate(
+      db.prepare(
+        `${botCte}
+        INSERT OR REPLACE INTO ${table} (date, ${field}, hits)
+        SELECT date(created_at), ${field}, COUNT(*)
+        FROM pageview_events
+        WHERE date(created_at) = ?
+          AND ${field} IS NOT NULL
+          AND visitor_id NOT IN (SELECT visitor_id FROM bots)
+        GROUP BY date(created_at), ${field}`
+      )
+    );
+
   await db.batch([
     // stats_daily — per (date, path)
-    db
-      .prepare(
+    bindDate(
+      db.prepare(
         `${botCte}
         INSERT OR REPLACE INTO stats_daily (date, path, views, visitors)
         SELECT date(created_at), path,
@@ -122,19 +150,11 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
           AND visitor_id NOT IN (SELECT visitor_id FROM bots)
         GROUP BY date(created_at), path`
       )
-      .bind(
-        date,
-        BOT_THRESHOLD_PER_DAY,
-        date,
-        BOT_BURST_WINDOW_SECONDS,
-        date,
-        BOT_BURST_HITS,
-        date
-      ),
+    ),
 
     // stats_daily_totals — per date (correct distinct count across all paths)
-    db
-      .prepare(
+    bindDate(
+      db.prepare(
         `${botCte}
         INSERT OR REPLACE INTO stats_daily_totals (date, views, visitors)
         SELECT date(created_at),
@@ -145,81 +165,11 @@ async function aggregateDate(db: D1Database, date: string): Promise<void> {
           AND visitor_id NOT IN (SELECT visitor_id FROM bots)
         GROUP BY date(created_at)`
       )
-      .bind(
-        date,
-        BOT_THRESHOLD_PER_DAY,
-        date,
-        BOT_BURST_WINDOW_SECONDS,
-        date,
-        BOT_BURST_HITS,
-        date
-      ),
+    ),
 
-    // stats_daily_referrers (NULL referrer excluded)
-    db
-      .prepare(
-        `${botCte}
-        INSERT OR REPLACE INTO stats_daily_referrers (date, referrer, hits)
-        SELECT date(created_at), referrer, COUNT(*)
-        FROM pageview_events
-        WHERE date(created_at) = ?
-          AND referrer IS NOT NULL
-          AND visitor_id NOT IN (SELECT visitor_id FROM bots)
-        GROUP BY date(created_at), referrer`
-      )
-      .bind(
-        date,
-        BOT_THRESHOLD_PER_DAY,
-        date,
-        BOT_BURST_WINDOW_SECONDS,
-        date,
-        BOT_BURST_HITS,
-        date
-      ),
-
-    // stats_daily_browsers (NULL browser excluded)
-    db
-      .prepare(
-        `${botCte}
-        INSERT OR REPLACE INTO stats_daily_browsers (date, browser, hits)
-        SELECT date(created_at), browser, COUNT(*)
-        FROM pageview_events
-        WHERE date(created_at) = ?
-          AND browser IS NOT NULL
-          AND visitor_id NOT IN (SELECT visitor_id FROM bots)
-        GROUP BY date(created_at), browser`
-      )
-      .bind(
-        date,
-        BOT_THRESHOLD_PER_DAY,
-        date,
-        BOT_BURST_WINDOW_SECONDS,
-        date,
-        BOT_BURST_HITS,
-        date
-      ),
-
-    // stats_daily_countries (NULL country excluded)
-    db
-      .prepare(
-        `${botCte}
-        INSERT OR REPLACE INTO stats_daily_countries (date, country, hits)
-        SELECT date(created_at), country, COUNT(*)
-        FROM pageview_events
-        WHERE date(created_at) = ?
-          AND country IS NOT NULL
-          AND visitor_id NOT IN (SELECT visitor_id FROM bots)
-        GROUP BY date(created_at), country`
-      )
-      .bind(
-        date,
-        BOT_THRESHOLD_PER_DAY,
-        date,
-        BOT_BURST_WINDOW_SECONDS,
-        date,
-        BOT_BURST_HITS,
-        date
-      ),
+    breakdown('stats_daily_referrers', 'referrer'),
+    breakdown('stats_daily_browsers', 'browser'),
+    breakdown('stats_daily_countries', 'country'),
 
     // stats_monthly — wipe and recompute the affected month from stats_daily.
     // DELETE first so paths that disappeared from the new aggregation
