@@ -75,3 +75,35 @@ pnpm format:check   # Check formatting without writing
 - Use the `wrapper` utility class for horizontal page containment (48rem max-width)
 - Blog post frontmatter schema: `title`, `description`, `pubDate` (required); `updatedDate`, `heroImage` (optional)
 - Site constants live in `src/consts.ts`
+
+## Working Principles (Karpathy-inspired)
+
+### 1. Think Before Coding
+Don't assume — ask. Surface ambiguity instead of silently picking one interpretation.
+- Ambiguous request (e.g. "add tracking" — which event? where?) → list options and ask.
+- State assumptions about SSR vs prerender, D1 schema, or analytics before acting on them.
+- Push back when a simpler path exists ("does this need an API route, or can it be static?").
+- Confused about `src/lib/analytics/` or layouts? Stop and ask.
+
+### 2. Simplicity First
+Minimum code that solves the problem.
+- No new abstractions for single-use code — inline it.
+- No flags, options, or "flexibility" that wasn't asked for.
+- No error handling for impossible cases (e.g. a D1 binding declared in `wrangler.json`).
+- Past ~100 lines in a component? Ask before splitting — don't split preemptively.
+- Prefer Tailwind utilities and semantic tokens over new CSS or scoped styles.
+
+### 3. Surgical Changes
+Touch only what the task requires.
+- Don't reformat, rename, or "improve" adjacent code while doing something else.
+- Don't refactor `src/lib/analytics/` or layouts unless that's the task.
+- Match the file's existing style, even if you'd write it differently.
+- Spot unrelated dead code or a bug? Mention it — don't fix it in this change.
+- Only remove imports/vars *your* edit orphaned. Leave pre-existing dead code alone.
+
+### 4. Goal-Driven Execution
+Define "done" before starting.
+- "Fix the stats page" → renders without errors, shows X for last 7 days, verified via `pnpm dev`.
+- "Add a post" → file in `src/content/posts/` with required frontmatter, `pnpm build` passes.
+- For multi-step work, list steps + how each is verified (lint, build, URL check).
+- UI/style changes: verify in browser via `pnpm dev` — builds don't prove a feature looks right.
