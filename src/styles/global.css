@@ -140,6 +140,17 @@ html[data-theme='dark'] {
     a {
       @apply underline-offset-2 transition-colors duration-200 hover:text-surface-foreground;
     }
+
+    code:not(pre code) {
+      padding: .125rem .375rem;
+      border-radius: .25rem;
+      background: var(--muted);
+
+      &::before,
+      &::after {
+        content: '';
+      }
+    }
   }
 }
 
