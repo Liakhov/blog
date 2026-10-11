@@ -20,7 +20,7 @@ const { title, period, items, max, emptyText = 'No data yet' } = Astro.props;
 <section class="mt-10">
   <h2 class="text-base font-semibold">
     {title}
-    {period && <span class="text-sm font-normal text-muted-foreground">{period}</span>}
+    {period && <span class="ml-2 text-sm font-normal text-muted-foreground">{period}</span>}
   </h2>
   {
     items.length > 0 ? (

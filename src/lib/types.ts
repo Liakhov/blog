@@ -43,6 +43,9 @@ export interface DashboardData {
   // Live (today) — raw events, bots filtered in-query.
   liveTodayTotals: Totals;
   liveTodayPages: PathRow[];
+  liveTodayReferrers: ReferrerRow[];
+  liveTodayBrowsers: BrowserRow[];
+  liveTodayCountries: CountryRow[];
 
   // Yesterday — still in pageview_events thanks to the 2-day buffer.
   yesterday: Totals;

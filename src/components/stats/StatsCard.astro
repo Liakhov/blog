@@ -10,7 +10,7 @@ const { label, views, visitors, emptyHint = 'processing', class: className = '' 
 const isEmpty = views === null || visitors === null;
 ---
 
-<div class:list={['rounded-lg bg-surface p-4', className]}>
+<div class:list={['rounded-lg border border-border bg-surface p-4', className]}>
   <p class="text-xs text-muted-foreground">{label}</p>
   {
     isEmpty ? (

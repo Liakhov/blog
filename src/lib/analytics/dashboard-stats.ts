@@ -37,6 +37,17 @@ const LIVE_TODAY_PAGES_SQL = `
   LIMIT 50
 `;
 
+const LIVE_TODAY_BREAKDOWN_SQL = (field: 'referrer' | 'browser' | 'country', fallback: string) => `
+  ${botFilterCte("date('now')")}
+  SELECT COALESCE(${field}, '${fallback}') AS ${field}, COUNT(*) AS hits
+  FROM pageview_events
+  WHERE date(created_at) = date('now')
+    AND visitor_id NOT IN (SELECT visitor_id FROM bots)
+  GROUP BY COALESCE(${field}, '${fallback}')
+  ORDER BY hits DESC, ${field} ASC
+  LIMIT 20
+`;
+
 /** Yesterday is still in pageview_events thanks to the 2-day cron buffer. */
 const YESTERDAY_TOTALS_SQL = `
   ${botFilterCte("date('now', '-1 day')")}
@@ -151,7 +162,16 @@ export async function getDashboardData(db: D1Database): Promise<DashboardData> {
     db.prepare(TOP_COUNTRIES_30D_SQL),
     db.prepare(TOTAL_7D_SQL),
     db.prepare(TOTAL_30D_SQL),
-    db.prepare(TOTAL_ALL_TIME_SQL)
+    db.prepare(TOTAL_ALL_TIME_SQL),
+    db
+      .prepare(LIVE_TODAY_BREAKDOWN_SQL('referrer', 'No referrer'))
+      .bind(BOT_THRESHOLD_PER_DAY, BOT_BURST_WINDOW_SECONDS, BOT_BURST_HITS),
+    db
+      .prepare(LIVE_TODAY_BREAKDOWN_SQL('browser', 'Unknown'))
+      .bind(BOT_THRESHOLD_PER_DAY, BOT_BURST_WINDOW_SECONDS, BOT_BURST_HITS),
+    db
+      .prepare(LIVE_TODAY_BREAKDOWN_SQL('country', 'Unknown'))
+      .bind(BOT_THRESHOLD_PER_DAY, BOT_BURST_WINDOW_SECONDS, BOT_BURST_HITS)
   ]);
 
   const [
@@ -167,12 +187,18 @@ export async function getDashboardData(db: D1Database): Promise<DashboardData> {
     topCountriesR,
     total7R,
     total30R,
-    totalAllTimeR
+    totalAllTimeR,
+    liveTodayReferrersR,
+    liveTodayBrowsersR,
+    liveTodayCountriesR
   ] = results;
 
   return {
     liveTodayTotals: firstRowOrZeros(liveTodayTotalsR.results as Totals[]),
     liveTodayPages: (liveTodayPagesR.results ?? []) as PathRow[],
+    liveTodayReferrers: (liveTodayReferrersR.results ?? []) as ReferrerRow[],
+    liveTodayBrowsers: (liveTodayBrowsersR.results ?? []) as BrowserRow[],
+    liveTodayCountries: (liveTodayCountriesR.results ?? []) as CountryRow[],
 
     yesterday: firstRowOrZeros(yesterdayR.results as Totals[]),
 
