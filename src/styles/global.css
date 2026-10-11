@@ -9,10 +9,9 @@ html[data-theme='light'] {
   --foreground: #282728;
 
   --surface: #f5f5f4bf;
-  --surface-fg: #000000;
 
   --muted: #0000000d;
-  --muted-fg: #00000060;
+  --muted-fg: #686768;
 
   --border: #00000015;
 }
@@ -22,7 +21,6 @@ html[data-theme='dark'] {
   --foreground: #ffffffbf;
 
   --surface: #262626bf;
-  --surface-fg: #ffffff;
 
   --muted: #ffffff1a;
   --muted-fg: #a3a3a3;
@@ -47,7 +45,6 @@ html[data-theme='dark'] {
 
   /* Surface — header, cards, elevated containers */
   --color-surface: var(--surface);
-  --color-surface-foreground: var(--surface-fg);
 
   /* Muted — captions, dates, secondary text */
   --color-muted: var(--muted);
@@ -85,7 +82,7 @@ html[data-theme='dark'] {
   h4,
   h5,
   h6 {
-    color: var(--color-surface-foreground);
+    color: var(--color-foreground);
   }
 
   button:not(:disabled),
@@ -138,7 +135,7 @@ html[data-theme='dark'] {
     }
 
     a {
-      @apply underline-offset-2 transition-colors duration-200 hover:text-surface-foreground;
+      @apply underline-offset-2 transition-colors duration-200 hover:text-foreground;
     }
 
     code:not(pre code) {

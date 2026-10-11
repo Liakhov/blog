@@ -26,7 +26,7 @@ const links = [
         links.map(link => (
           <a
             href={link.href}
-            class="text-muted-foreground transition-colors duration-200 hover:text-surface-foreground"
+            class="text-muted-foreground transition-colors duration-200 hover:text-foreground"
             {...(link.href.startsWith('http') && { target: '_blank', rel: 'noopener noreferrer' })}
           >
             {link.label}

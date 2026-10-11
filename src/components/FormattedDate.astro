@@ -8,7 +8,7 @@ interface Props {
 const { date } = Astro.props;
 ---
 
-<div class="flex items-center gap-x-2 text-foreground">
+<div class="flex items-center gap-x-2 text-muted-foreground">
   <Calendar class:list={['inline-block size-4']} />
 
   <time class="text-sm" datetime={date.toISOString()}>
